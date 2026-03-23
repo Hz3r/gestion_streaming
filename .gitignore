@@ -1,0 +1,24 @@
+# --- GENERAL ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# --- BACKEND (Node.js / Express) ---
+backend/node_modules/
+backend/.env
+backend/dist/
+backend/npm-debug.log*
+backend/logs/
+
+# --- FRONTEND (React / Vite / Tailwind) ---
+frontend/node_modules/
+frontend/.env
+frontend/.env.local
+frontend/dist/
+frontend/build/
+frontend/npm-debug.log*
+
+# --- OTROS ---
+*.log
+.temp/
