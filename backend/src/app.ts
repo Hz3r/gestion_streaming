@@ -8,6 +8,7 @@ import cookieParser from 'cookie-parser';
 // Importar rutas
 import usuarioRoutes from './routes/usuarioRoutes';
 import rolRoutes from './routes/rolRoutes';
+import plataformaRoutes from './routes/PlataformaRoutes';
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use(express.urlencoded({ extended: true }));
 // Rutas
 app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/roles', rolRoutes);
+app.use('/api/plataformas', plataformaRoutes);
 
 // Ruta de salud
 app.get('/api/health', (req, res) => {
