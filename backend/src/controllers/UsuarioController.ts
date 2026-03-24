@@ -36,6 +36,61 @@ class UsuarioController {
             });
         }
     }
+
+    async eliminar(req: Request, res: Response) {
+        try {
+            const id = parseInt(req.params.id as string);
+            const eliminado = await UsuarioService.eliminar(id);
+            res.status(200).json({
+                message: 'Usuario eliminado con éxito',
+                eliminado
+            });
+        } catch (error: any) {
+            res.status(400).json({
+                message: error.message
+            });
+        }
+    }
+
+    async actualizar(req: Request, res: Response) {
+        try {
+            const id = parseInt(req.params.id as string);
+            const datos = req.body;
+            const actualizado = await UsuarioService.actualizar(id, datos);
+            res.status(200).json({
+                message: 'Usuario actualizado con éxito',
+                actualizado
+            });
+        } catch (error: any) {
+            res.status(400).json({
+                message: error.message
+            });
+        }
+    }
+
+    async obtenerTodos(req: Request, res: Response) {
+        try {
+            const usuarios = await UsuarioService.obtenerTodos();
+            res.status(200).json(usuarios);
+        } catch (error: any) {
+            res.status(400).json({
+                message: error.message
+            });
+        }
+    }
+
+    async obtenerPorId(req: Request, res: Response) {
+        try {
+            const id = parseInt(req.params.id as string);
+            const usuario = await UsuarioService.obtenerPorId(id);
+            res.status(200).json(usuario);
+        } catch (error: any) {
+            res.status(400).json({
+                message: error.message
+            });
+        }
+    }
+
 }
 
 export default new UsuarioController();

@@ -48,6 +48,30 @@ class UsuarioService{
         return userDTO;
     }
 
+    async eliminar(id:number):Promise<number>{
+        const usuario = await UsuarioRepository.obtenerPorId(id);
+        if(!usuario){
+            throw new Error('Usuario no encontrado');
+        }
+        return await UsuarioRepository.eliminar(id);
+    }
+
+    async actualizar(id:number, usuario:Usuario):Promise<number>{
+        const usuarioExistente = await UsuarioRepository.obtenerPorId(id);
+        if(!usuarioExistente){
+            throw new Error('Usuario no encontrado');
+        }
+        return await UsuarioRepository.actualizar(id, usuario);
+    }
+
+    async obtenerTodos():Promise<Usuario[]>{ 
+        return await UsuarioRepository.obtenerTodos();
+    }
+
+    async obtenerPorId(id:number):Promise<Usuario | null>{
+        return await UsuarioRepository.obtenerPorId(id);
+    }
+
 
 
 
