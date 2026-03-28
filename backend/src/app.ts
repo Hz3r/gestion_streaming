@@ -10,6 +10,7 @@ import usuarioRoutes from './routes/usuarioRoutes';
 import rolRoutes from './routes/rolRoutes';
 import plataformaRoutes from './routes/PlataformaRoutes';
 import metodo_pagoRoutes from './routes/Metodo_PagoRoutes';
+import proveedorRoutes from './routes/ProveedorRoutes';
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/roles', rolRoutes);
 app.use('/api/plataformas', plataformaRoutes);
 app.use('/api/metodos_pago', metodo_pagoRoutes);
+app.use('/api/proveedores', proveedorRoutes);
 
 // Ruta de salud
 app.get('/api/health', (req, res) => {
