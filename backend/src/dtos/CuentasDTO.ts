@@ -1,12 +1,11 @@
-interface Cuentas{
-    id_cuenta:number,
+interface CuentasDTO{
     email:string,
     contraseña:string,
-    fecha_compra:Date,
-    fecha_expiracion:Date,
+    fecha_compra: string|Date,
+    fecha_expiracion: string|Date,
     id_plataforma:number,
     id_proveedor:number,
     estado:'Activa'|'Caída'|'Renovada'
 }
 
-export default Cuentas
+export default CuentasDTO
