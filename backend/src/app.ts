@@ -12,6 +12,7 @@ import plataformaRoutes from './routes/PlataformaRoutes';
 import metodo_pagoRoutes from './routes/Metodo_PagoRoutes';
 import proveedorRoutes from './routes/ProveedorRoutes';
 import cuentasRoutes from './routes/CuentaRoutes';
+import contratosRoutes from './routes/ContratosRoutes';
 
 
 const app = express();
@@ -34,6 +35,7 @@ app.use('/api/plataformas', plataformaRoutes);
 app.use('/api/metodos_pago', metodo_pagoRoutes);
 app.use('/api/proveedores', proveedorRoutes);
 app.use('/api/cuentas', cuentasRoutes);
+app.use('/api/contratos', contratosRoutes);
 
 // Ruta de salud
 app.get('/api/health', (req, res) => {
