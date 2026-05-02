@@ -78,7 +78,8 @@ const ContratosPage = () => {
       setClientes(resCli.data.map((c: any) => ({ value: c.id_cliente, label: c.nombre })));
       setCuentas(resCue.data.map((c: any) => ({ 
         value: c.id_cuenta, 
-        label: `${c.email} — ${c.plataforma} (${c.capacidad_total - c.perfiles_en_uso} disp.)` 
+        label: `${c.email} — ${c.plataforma} (${c.capacidad_total - c.perfiles_en_uso} disp.)`,
+        estado: c.estado
       })));
       setMetodosPago(resMet.data.map((m: any) => ({ value: m.id_metodo, label: m.nombre })));
     } catch (error) {
@@ -335,7 +336,7 @@ const ContratosPage = () => {
             name="id_cuenta"
             value={form.id_cuenta}
             onChange={handleComboboxChange}
-            options={cuentas}
+            options={cuentas.filter((c: any) => c.estado !== 'Caída' || c.value === Number(form.id_cuenta))}
             placeholder="Buscar cuenta..."
             searchPlaceholder="Escribe el email o plataforma..."
             required

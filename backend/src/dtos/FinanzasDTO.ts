@@ -1,10 +1,14 @@
-// Resumen financiero mensual (viene de la vista SQL)
+// Resumen financiero mensual (incluye egresos)
 interface FinanzasResumenDTO {
     readonly mes: number;
     readonly anio: number;
     readonly ingresos_reales: number;
     readonly ingresos_pendientes: number;
     readonly ingresos_proyectados: number;
+    // Nuevos campos
+    readonly inversiones: number;
+    readonly gastos_perdidas: number;
+    readonly utilidad_neta: number;
 }
 
 // Detalle de un contrato pendiente (para el click en "Pendientes")

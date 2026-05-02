@@ -47,6 +47,17 @@ class FinanzasController {
             res.status(400).json({ message: error.message });
         }
     }
+
+    // POST /api/finanzas/cerrar-mes — Registrar pago de staff
+    async cerrarMes(req: Request, res: Response) {
+        try {
+            const { mes, anio, montoStaff } = req.body;
+            await FinanzasService.cerrarMes(Number(mes), Number(anio), Number(montoStaff));
+            res.status(201).json({ message: 'Mes cerrado con éxito y pago de staff registrado' });
+        } catch (error: any) {
+            res.status(400).json({ message: error.message });
+        }
+    }
 }
 
 export default new FinanzasController();

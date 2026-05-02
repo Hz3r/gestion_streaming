@@ -17,6 +17,7 @@ import contratosRoutes from './routes/ContratosRoutes';
 import finanzasRoutes from './routes/FinanzasRoutes';
 import configuracionRoutes from './routes/configuracionRoutes';
 import notificacionRoutes from './routes/notificacionRoutes';
+import egresoRoutes from './routes/EgresoRoutes';
 
 
 const app = express();
@@ -45,6 +46,7 @@ app.use('/api/contratos', contratosRoutes);
 app.use('/api/finanzas', finanzasRoutes);
 app.use('/api/configuracion', configuracionRoutes);
 app.use('/api/notificaciones', notificacionRoutes);
+app.use('/api/egresos', egresoRoutes);
 
 
 // Ruta de salud

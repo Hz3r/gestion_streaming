@@ -25,11 +25,14 @@ type Cuenta = {
   estado: string;
   capacidad_total: number;
   perfiles_en_uso: number;
+  costo_total: number;
+  meses_duracion: number;
 };
 
 const INITIAL_FORM = {
   email: "", contraseña: "", fecha_compra: "", fecha_expiracion: "",
   id_plataforma: "", id_proveedor: "", estado: "Activa", capacidad_total: "4",
+  costo_total: "0", meses_duracion: "1"
 };
 
 const ESTADOS_OPT = [
@@ -85,13 +88,15 @@ const CuentasPage = () => {
     setEditItem(item);
     setForm({
       email: item.email, 
-      contraseña: item.contraseña, // Cargar contraseña existente
+      contraseña: item.contraseña,
       fecha_compra: item.fecha_compra.split("T")[0],
       fecha_expiracion: item.fecha_expiracion.split("T")[0], 
       id_plataforma: item.id_plataforma,
       id_proveedor: item.id_proveedor, 
       estado: item.estado, 
       capacidad_total: String(item.capacidad_total),
+      costo_total: String(item.costo_total),
+      meses_duracion: String(item.meses_duracion)
     });
     setModalOpen(true);
   };
@@ -99,10 +104,17 @@ const CuentasPage = () => {
 
   const handleSave = async () => {
     try {
+      const dataToSend = {
+        ...form,
+        capacidad_total: Number(form.capacidad_total),
+        costo_total: Number(form.costo_total),
+        meses_duracion: Number(form.meses_duracion)
+      };
+
       if (editItem) {
-        await updateCuenta(editItem.id_cuenta, form);
+        await updateCuenta(editItem.id_cuenta, dataToSend);
       } else {
-        await createCuenta(form);
+        await createCuenta(dataToSend);
       }
       setModalOpen(false);
       fetchInitialData();
@@ -126,20 +138,7 @@ const CuentasPage = () => {
     () => [
       { accessorKey: "id_cuenta", header: "ID", size: 60 },
       { accessorKey: "email", header: "Email", size: 200 },
-      { 
-        accessorKey: "fecha_compra", 
-        header: "F. Compra", 
-        size: 110,
-        Cell: ({ cell }) => cell.getValue<string>()?.split("T")[0]
-      },
-      { 
-        accessorKey: "fecha_expiracion", 
-        header: "F. Expiración", 
-        size: 110,
-        Cell: ({ cell }) => cell.getValue<string>()?.split("T")[0]
-      },
       { accessorKey: "plataforma", header: "Plataforma", size: 110 },
-      { accessorKey: "proveedor", header: "Proveedor", size: 110 },
       {
         accessorKey: "estado",
         header: "Estado",
@@ -153,11 +152,22 @@ const CuentasPage = () => {
           return <span className={cls}>{val}</span>;
         },
       },
-      { accessorKey: "capacidad_total", header: "Capacidad", size: 90 },
+      {
+        accessorKey: "costo_total",
+        header: "Costo",
+        size: 90,
+        Cell: ({ cell }) => `S/ ${Number(cell.getValue<number>()).toFixed(2)}`
+      },
+      {
+        accessorKey: "meses_duracion",
+        header: "Duración",
+        size: 90,
+        Cell: ({ cell }) => `${cell.getValue()} mes(es)`
+      },
       {
         accessorKey: "perfiles_en_uso",
-        header: "En Uso",
-        size: 90,
+        header: "Uso",
+        size: 100,
         Cell: ({ row }) => {
           const enUso = row.original.perfiles_en_uso;
           const total = row.original.capacidad_total;
@@ -175,6 +185,12 @@ const CuentasPage = () => {
             </div>
           );
         },
+      },
+      { 
+        accessorKey: "fecha_expiracion", 
+        header: "Expiración", 
+        size: 110,
+        Cell: ({ cell }) => cell.getValue<string>()?.split("T")[0]
       },
     ],
     []
@@ -233,7 +249,6 @@ const CuentasPage = () => {
             onChange={handleComboboxChange}
             options={plataformas}
             placeholder="Buscar plataforma..."
-            searchPlaceholder="Ej: Netflix, HBO..."
             required
           />
           <FormCombobox
@@ -243,7 +258,6 @@ const CuentasPage = () => {
             onChange={handleComboboxChange}
             options={proveedores}
             placeholder="Buscar proveedor..."
-            searchPlaceholder="Ej: DistroTV..."
             required
           />
           <FormInput
@@ -271,13 +285,30 @@ const CuentasPage = () => {
             required
           />
           <FormInput
-            label="Capacidad total (perfiles)"
+            label="Capacidad total"
             name="capacidad_total"
             type="number"
             value={form.capacidad_total}
             onChange={handleChange}
             min={1}
-            max={10}
+            required
+          />
+          <FormInput
+            label="Costo Total de Inversión"
+            name="costo_total"
+            type="number"
+            value={form.costo_total}
+            onChange={handleChange}
+            placeholder="Ej: 75.00"
+            required
+          />
+          <FormInput
+            label="Duración (Meses)"
+            name="meses_duracion"
+            type="number"
+            value={form.meses_duracion}
+            onChange={handleChange}
+            min={1}
             required
           />
         </div>
@@ -287,7 +318,7 @@ const CuentasPage = () => {
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
         onConfirm={handleDelete}
-        message={`¿Estás seguro de eliminar la cuenta "${deleteItem?.email}"? Los contratos asociados podrían verse afectados.`}
+        message={`¿Estás seguro de eliminar la cuenta "${deleteItem?.email}"?`}
       />
     </>
   );

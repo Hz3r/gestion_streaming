@@ -40,6 +40,7 @@ export const deleteContrato = (id: number) => api.delete(`/contratos/${id}`);
 export const getResumenGeneral = () => api.get("/finanzas/resumen");
 export const getResumenAnual = (anio: number) => api.get(`/finanzas/resumen/${anio}`);
 export const getPendientesMensual = (mes: number, anio: number) => api.get(`/finanzas/pendientes/${anio}/${mes}`);
+export const cerrarMes = (data: { mes: number, anio: number, montoStaff: number }) => api.post("/finanzas/cerrar-mes", data);
 
 // ─── USUARIOS / ROLES ───
 export const getUsuarios = () => api.get("/usuarios");

@@ -15,4 +15,7 @@ router.get('/resumen/:anio/:mes', FinanzasController.obtenerResumenMensual);
 // Detalle de contratos pendientes de un mes
 router.get('/pendientes/:anio/:mes', FinanzasController.obtenerPendientesMensual);
 
+// Registrar pago de staff (Cerrar Mes)
+router.post('/cerrar-mes', FinanzasController.cerrarMes);
+
 export default router;

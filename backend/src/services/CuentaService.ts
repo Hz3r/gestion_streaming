@@ -5,20 +5,11 @@ import CuentaRepository from "../repositories/CuentaRepository";
 class CuentaService {
 
     async crearCuenta(cuentas: Cuentas): Promise<CuentasDTO> {
+        // La lógica financiera se maneja mediante TRIGGERS en la base de datos
         const id = await CuentaRepository.crearCuenta(cuentas);
-        // Al crear, no tenemos los nombres de plataforma/proveedor por el JOIN, 
-        // pero podemos retornar el objeto básico o hacer un fetch extra si es necesario.
-        // Por ahora retornamos lo básico.
         return {
             id_cuenta: id,
-            email: cuentas.email,
-            contraseña: cuentas.contraseña,
-            fecha_compra: cuentas.fecha_compra,
-            fecha_expiracion: cuentas.fecha_expiracion,
-            id_plataforma: cuentas.id_plataforma,
-            id_proveedor: cuentas.id_proveedor,
-            estado: cuentas.estado,
-            capacidad_total: cuentas.capacidad_total,
+            ...cuentas,
             perfiles_en_uso: 0
         };
     }
@@ -37,15 +28,15 @@ class CuentaService {
             proveedor: (c as any).proveedor,
             estado: c.estado,
             capacidad_total: c.capacidad_total,
-            perfiles_en_uso: c.perfiles_en_uso
+            perfiles_en_uso: c.perfiles_en_uso,
+            costo_total: c.costo_total,
+            meses_duracion: c.meses_duracion
         }));
     }
 
     async obtenerPorId(id: number): Promise<CuentasDTO> {
         const cuenta = await CuentaRepository.obtenerPorId(id);
-        if (!cuenta) {
-            throw new Error('Cuenta no encontrada');
-        }
+        if (!cuenta) throw new Error('Cuenta no encontrada');
         return {
             id_cuenta: cuenta.id_cuenta,
             email: cuenta.email,
@@ -58,35 +49,32 @@ class CuentaService {
             proveedor: (cuenta as any).proveedor,
             estado: cuenta.estado,
             capacidad_total: cuenta.capacidad_total,
-            perfiles_en_uso: cuenta.perfiles_en_uso
+            perfiles_en_uso: cuenta.perfiles_en_uso,
+            costo_total: cuenta.costo_total,
+            meses_duracion: cuenta.meses_duracion
         };
     }
 
     async actualizarCuenta(id: number, cuentas: Cuentas): Promise<CuentasDTO> {
         const existe = await CuentaRepository.obtenerPorId(id);
-        if (!existe) {
-            throw new Error('Cuenta no encontrada');
-        }
+        if (!existe) throw new Error('Cuenta no encontrada');
+
+        // La sincronización de egresos (Inversión, Caída/Recuperación) 
+        // se maneja ahora mediante el TRIGGER tg_sincronizar_finanzas_update
         await CuentaRepository.actualizar(id, cuentas);
+        
         return {
             id_cuenta: id,
-            email: cuentas.email,
-            contraseña: cuentas.contraseña,
-            fecha_compra: cuentas.fecha_compra,
-            fecha_expiracion: cuentas.fecha_expiracion,
-            id_plataforma: cuentas.id_plataforma,
-            id_proveedor: cuentas.id_proveedor,
-            estado: cuentas.estado,
-            capacidad_total: cuentas.capacidad_total,
-            perfiles_en_uso: (existe as any).perfiles_en_uso
+            ...cuentas,
+            perfiles_en_uso: existe.perfiles_en_uso
         };
     }
 
     async eliminarCuenta(id: number): Promise<void> {
         const existe = await CuentaRepository.obtenerPorId(id);
-        if (!existe) {
-            throw new Error('Cuenta no encontrada');
-        }
+        if (!existe) throw new Error('Cuenta no encontrada');
+        
+        // La limpieza de egresos se maneja mediante el TRIGGER tg_limpiar_finanzas_delete
         await CuentaRepository.eliminar(id);
     }
 }

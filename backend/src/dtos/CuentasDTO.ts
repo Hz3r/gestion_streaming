@@ -1,4 +1,4 @@
-interface CuentasDTO{
+interface CuentasDTO {
     id_cuenta?: number;
     email: string;
     contraseña: string;
@@ -11,6 +11,9 @@ interface CuentasDTO{
     estado: 'Activa' | 'Caída' | 'Renovada';
     capacidad_total: number;
     perfiles_en_uso: number;
+    // Nuevos campos financieros
+    costo_total: number;
+    meses_duracion: number;
 }
 
-export default CuentasDTO
+export default CuentasDTO;

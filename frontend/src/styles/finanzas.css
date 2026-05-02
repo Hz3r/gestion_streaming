@@ -252,8 +252,18 @@
 }
 
 .td-real { color: var(--color-success-700); font-weight: var(--font-weight-semibold); }
-.td-pendiente { color: var(--color-warning-700); font-weight: var(--font-weight-semibold); }
+.td-pendiente { color: var(--color-error-700); font-weight: var(--font-weight-semibold); }
 .td-proyectado { color: var(--color-primary-700); font-weight: var(--font-weight-semibold); }
+.td-utilidad { color: var(--color-violet-700); font-weight: var(--font-weight-bold); }
+
+.finanzas-kpi--utilidad {
+  border-bottom: 4px solid var(--color-violet-500);
+}
+.finanzas-kpi__icon-wrap--utilidad {
+  background: linear-gradient(135deg, rgba(124, 92, 252, 0.15) 0%, rgba(124, 92, 252, 0.05) 100%);
+  color: var(--color-violet-500);
+}
+.finanzas-kpi__value--utilidad { color: var(--color-violet-600); }
 
 /* ─── Mini progress bar en tabla ─── */
 .mini-progress {

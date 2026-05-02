@@ -4,8 +4,16 @@ import pool from "../config/db";
 class CuentaRepository {
 
     async crearCuenta(cuentas: Cuentas): Promise<number> {
-        const sql = `INSERT INTO cuentas (email, contraseña, fecha_compra, fecha_expiracion, id_plataforma, id_proveedor, estado, capacidad_total) VALUES (?,?,?,?,?,?,?,?)`;
-        const [result]: any = await pool.execute(sql, [cuentas.email, cuentas.contraseña, cuentas.fecha_compra, cuentas.fecha_expiracion, cuentas.id_plataforma, cuentas.id_proveedor, cuentas.estado, cuentas.capacidad_total]);
+        const sql = `INSERT INTO cuentas (
+            email, contraseña, fecha_compra, fecha_expiracion, 
+            id_plataforma, id_proveedor, estado, capacidad_total,
+            costo_total, meses_duracion
+        ) VALUES (?,?,?,?,?,?,?,?,?,?)`;
+        const [result]: any = await pool.execute(sql, [
+            cuentas.email, cuentas.contraseña, cuentas.fecha_compra, cuentas.fecha_expiracion, 
+            cuentas.id_plataforma, cuentas.id_proveedor, cuentas.estado, cuentas.capacidad_total,
+            cuentas.costo_total, cuentas.meses_duracion
+        ]);
         return result.insertId;
     }
 
@@ -39,8 +47,16 @@ class CuentaRepository {
     }
 
     async actualizar(id: number, cuentas: Cuentas): Promise<number> {
-        const sql = 'UPDATE cuentas SET email = ?, contraseña = ?, fecha_compra = ?, fecha_expiracion = ?, id_plataforma = ?, id_proveedor = ?, estado = ?, capacidad_total = ? WHERE id_cuenta = ?';
-        const [result]: any = await pool.execute(sql, [cuentas.email, cuentas.contraseña, cuentas.fecha_compra, cuentas.fecha_expiracion, cuentas.id_plataforma, cuentas.id_proveedor, cuentas.estado, cuentas.capacidad_total, id]);
+        const sql = `UPDATE cuentas SET 
+            email = ?, contraseña = ?, fecha_compra = ?, fecha_expiracion = ?, 
+            id_plataforma = ?, id_proveedor = ?, estado = ?, capacidad_total = ?,
+            costo_total = ?, meses_duracion = ? 
+            WHERE id_cuenta = ?`;
+        const [result]: any = await pool.execute(sql, [
+            cuentas.email, cuentas.contraseña, cuentas.fecha_compra, cuentas.fecha_expiracion, 
+            cuentas.id_plataforma, cuentas.id_proveedor, cuentas.estado, cuentas.capacidad_total,
+            cuentas.costo_total, cuentas.meses_duracion, id
+        ]);
         return result.affectedRows;
     }
 
