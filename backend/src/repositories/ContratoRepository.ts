@@ -72,7 +72,7 @@ class ContratoRepository{
     async obtenerDetalleTodos(): Promise<any[]> {
         const sql = `SELECT 
             c.id_contrato,
-            u.nombre AS cliente,
+            cl.nombre AS cliente,
             cu.email AS cuenta,
             p.nombre AS plataforma,
             mp.nombre AS metodo_pago,
@@ -86,7 +86,7 @@ class ContratoRepository{
             c.id_cuenta,
             c.id_metodo
         FROM contratos c
-        INNER JOIN usuarios u ON c.id_cliente = u.id_usuario
+        INNER JOIN clientes cl ON c.id_cliente = cl.id_cliente
         INNER JOIN cuentas cu ON c.id_cuenta = cu.id_cuenta
         INNER JOIN plataformas p ON cu.id_plataforma = p.id_plataforma
         INNER JOIN metodo_pago mp ON c.id_metodo = mp.id_metodo`;
@@ -98,7 +98,7 @@ class ContratoRepository{
     async obtenerDetallePorId(id: number): Promise<any | null> {
         const sql = `SELECT 
             c.id_contrato,
-            u.nombre AS cliente,
+            cl.nombre AS cliente,
             cu.email AS cuenta,
             p.nombre AS plataforma,
             mp.nombre AS metodo_pago,
@@ -112,7 +112,7 @@ class ContratoRepository{
             c.id_cuenta,
             c.id_metodo
         FROM contratos c
-        INNER JOIN usuarios u ON c.id_cliente = u.id_usuario
+        INNER JOIN clientes cl ON c.id_cliente = cl.id_cliente
         INNER JOIN cuentas cu ON c.id_cuenta = cu.id_cuenta
         INNER JOIN plataformas p ON cu.id_plataforma = p.id_plataforma
         INNER JOIN metodo_pago mp ON c.id_metodo = mp.id_metodo

@@ -119,7 +119,7 @@ class FinanzasRepository {
         const sql = `
             SELECT 
                 c.id_contrato,
-                u.nombre  AS nombre_cliente,
+                cl.nombre  AS nombre_cliente,
                 cu.email  AS email_cuenta,
                 p.nombre  AS nombre_plataforma,
                 c.perfiles_alquilados,
@@ -127,7 +127,7 @@ class FinanzasRepository {
                 c.fecha_vencimiento,
                 c.precio_total
             FROM contratos c
-            INNER JOIN usuarios    u  ON c.id_cliente    = u.id_usuario
+            INNER JOIN clientes    cl ON c.id_cliente    = cl.id_cliente
             INNER JOIN cuentas     cu ON c.id_cuenta     = cu.id_cuenta
             INNER JOIN plataformas p  ON cu.id_plataforma = p.id_plataforma
             WHERE c.estado_pagado = 0 
