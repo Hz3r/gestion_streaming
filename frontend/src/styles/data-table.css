@@ -1,0 +1,113 @@
+/* src/styles/data-table.css */
+
+/* ─── Contenedor de página con tabla ─── */
+.page-table {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ─── Barra superior: título + botón agregar ─── */
+.page-table__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.page-table__title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+}
+
+/* ─── Botón Agregar ─── */
+.btn-add {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+  padding: var(--space-2) var(--space-5);
+  background: var(--gradient-primary);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-add:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.btn-add:active {
+  transform: translateY(0);
+}
+
+/* ─── Card contenedora de la tabla ─── */
+.table-card {
+  background-color: var(--bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+/* ─── Overrides MUI para integrar con nuestro tema ─── */
+
+/* Cabecera de tabla */
+.table-card .MuiTableHead-root .MuiTableCell-head {
+  background-color: var(--color-gray-50) !important;
+  color: var(--color-gray-600) !important;
+  font-weight: var(--font-weight-semibold) !important;
+  font-size: var(--font-size-xs) !important;
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wider);
+  border-bottom: var(--border-width-thin) solid var(--color-gray-200) !important;
+  font-family: var(--font-family-primary) !important;
+}
+
+/* Celdas del body */
+.table-card .MuiTableBody-root .MuiTableCell-body {
+  color: var(--color-gray-700) !important;
+  font-size: var(--font-size-sm) !important;
+  border-bottom: var(--border-width-thin) solid var(--color-gray-100) !important;
+  font-family: var(--font-family-primary) !important;
+}
+
+/* Hover en filas */
+.table-card .MuiTableRow-root:hover td {
+  background-color: var(--color-primary-50) !important;
+}
+
+/* Toolbar superior (search) */
+.table-card .MuiToolbar-root {
+  padding: var(--space-3) var(--space-4) !important;
+  min-height: auto !important;
+}
+
+/* Input de búsqueda global */
+.table-card .MuiInputBase-root {
+  font-family: var(--font-family-primary) !important;
+  font-size: var(--font-size-sm) !important;
+}
+
+/* Paginación */
+.table-card .MuiTablePagination-root {
+  font-family: var(--font-family-primary) !important;
+  color: var(--color-gray-600) !important;
+  border-top: var(--border-width-thin) solid var(--color-gray-200) !important;
+}
+
+/* Botones de acciones */
+.table-card .MuiIconButton-root {
+  color: var(--color-gray-500);
+  transition: all var(--transition-fast);
+}
+
+.table-card .MuiIconButton-root:hover {
+  color: var(--color-primary-600);
+  background-color: var(--color-primary-50);
+}

@@ -13,7 +13,9 @@ class CuentaService {
             fecha_expiracion: cuentas.fecha_expiracion,
             id_plataforma: cuentas.id_plataforma,
             id_proveedor: cuentas.id_proveedor,
-            estado: cuentas.estado
+            estado: cuentas.estado,
+            capacidad_total: cuentas.capacidad_total,
+            perfiles_en_uso: 0
         };
     }
 
@@ -26,7 +28,9 @@ class CuentaService {
             fecha_expiracion: c.fecha_expiracion,
             id_plataforma: c.id_plataforma,
             id_proveedor: c.id_proveedor,
-            estado: c.estado
+            estado: c.estado,
+            capacidad_total: c.capacidad_total,
+            perfiles_en_uso: c.perfiles_en_uso
         }));
     }
 
@@ -42,7 +46,9 @@ class CuentaService {
             fecha_expiracion: cuenta.fecha_expiracion,
             id_plataforma: cuenta.id_plataforma,
             id_proveedor: cuenta.id_proveedor,
-            estado: cuenta.estado
+            estado: cuenta.estado,
+            capacidad_total: cuenta.capacidad_total,
+            perfiles_en_uso: cuenta.perfiles_en_uso
         };
     }
 
@@ -59,7 +65,9 @@ class CuentaService {
             fecha_expiracion: cuentas.fecha_expiracion,
             id_plataforma: cuentas.id_plataforma,
             id_proveedor: cuentas.id_proveedor,
-            estado: cuentas.estado
+            estado: cuentas.estado,
+            capacidad_total: cuentas.capacidad_total,
+            perfiles_en_uso: existe.perfiles_en_uso
         };
     }
 

@@ -1,6 +1,5 @@
 interface PlataformaDTO{
-    nombre:string,
-    max_perfiles:number
+    nombre:string
 }
 
 export default PlataformaDTO

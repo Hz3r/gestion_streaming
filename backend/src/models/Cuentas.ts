@@ -6,7 +6,9 @@ interface Cuentas{
     fecha_expiracion:Date,
     id_plataforma:number,
     id_proveedor:number,
-    estado:'Activa'|'Caída'|'Renovada'
+    estado:'Activa'|'Caída'|'Renovada',
+    capacidad_total:number,
+    perfiles_en_uso:number
 }
 
 export default Cuentas

@@ -3,7 +3,6 @@ import ContratosDTO from "../dtos/ContratosDTO";
 import ContratosDetalleDTO from "../dtos/ContratosDetalleDTO";
 import ContratoRepository from "../repositories/ContratoRepository";
 import CuentaRepository from "../repositories/CuentaRepository";
-import PlataformaRepository from "../repositories/PlataformaRepository";
 
 class ContratoService{
 
@@ -19,27 +18,20 @@ class ContratoService{
             throw new Error('No se puede crear un contrato sobre una cuenta caída');
         }
 
-        // 3. Obtener la plataforma para saber max_perfiles
-        const plataforma = await PlataformaRepository.obtenerPorId(cuenta.id_plataforma);
-        if(!plataforma){
-            throw new Error('La plataforma asociada a la cuenta no existe');
-        }
-
-        // 4. Validar disponibilidad de perfiles
-        const perfilesOcupados = await ContratoRepository.contarPerfilesOcupados(contrato.id_cuenta);
-        const perfilesDisponibles = plataforma.max_perfiles - perfilesOcupados;
+        // 3. Validar disponibilidad de perfiles usando capacidad_total y perfiles_en_uso de la cuenta
+        const perfilesDisponibles = cuenta.capacidad_total - cuenta.perfiles_en_uso;
 
         if(contrato.perfiles_alquilados > perfilesDisponibles){
             throw new Error(
                 `No hay suficientes perfiles disponibles. ` +
-                `Máximo: ${plataforma.max_perfiles}, ` +
-                `Ocupados: ${perfilesOcupados}, ` +
+                `Capacidad total: ${cuenta.capacidad_total}, ` +
+                `En uso: ${cuenta.perfiles_en_uso}, ` +
                 `Disponibles: ${perfilesDisponibles}, ` +
                 `Solicitados: ${contrato.perfiles_alquilados}`
             );
         }
 
-        // 5. Validar fechas
+        // 4. Validar fechas
         const fechaInicio = new Date(contrato.fecha_inicio);
         const fechaVencimiento = new Date(contrato.fecha_vencimiento);
 
@@ -47,11 +39,14 @@ class ContratoService{
             throw new Error('La fecha de inicio debe ser anterior a la fecha de vencimiento');
         }
 
-        // 6. Calcular precio_total
+        // 5. Calcular precio_total
         contrato.precio_total = contrato.precio_unitario * contrato.perfiles_alquilados;
 
-        // 7. Insertar y obtener el id generado
+        // 6. Insertar y obtener el id generado
         const id_contrato = await ContratoRepository.crearContrato(contrato);
+
+        // 7. Actualizar perfiles_en_uso en la cuenta (incrementar)
+        await CuentaRepository.actualizarPerfilesEnUso(contrato.id_cuenta, contrato.perfiles_alquilados);
 
         return {
             id_contrato,
@@ -162,16 +157,10 @@ class ContratoService{
             throw new Error('No se puede actualizar un contrato a una cuenta caída');
         }
 
-        // Validar disponibilidad de perfiles (descontando los del contrato actual)
-        const plataforma = await PlataformaRepository.obtenerPorId(cuenta.id_plataforma);
-        if(!plataforma){
-            throw new Error('La plataforma asociada a la cuenta no existe');
-        }
-
-        const perfilesOcupados = await ContratoRepository.contarPerfilesOcupados(contrato.id_cuenta);
+        // Validar disponibilidad de perfiles usando capacidad_total y perfiles_en_uso
         // Si la cuenta es la misma, restamos los perfiles del contrato actual para no contar doble
         const perfilesActuales = (existe.id_cuenta === contrato.id_cuenta) ? existe.perfiles_alquilados : 0;
-        const perfilesDisponibles = plataforma.max_perfiles - perfilesOcupados + perfilesActuales;
+        const perfilesDisponibles = cuenta.capacidad_total - cuenta.perfiles_en_uso + perfilesActuales;
 
         if(contrato.perfiles_alquilados > perfilesDisponibles){
             throw new Error(
@@ -190,6 +179,21 @@ class ContratoService{
 
         // Recalcular precio_total
         contrato.precio_total = contrato.precio_unitario * contrato.perfiles_alquilados;
+
+        // Ajustar perfiles_en_uso: restar los anteriores y sumar los nuevos
+        // Si cambió de cuenta, decrementar la cuenta anterior e incrementar la nueva
+        if(existe.id_cuenta !== contrato.id_cuenta){
+            // Decrementar perfiles de la cuenta anterior
+            await CuentaRepository.actualizarPerfilesEnUso(existe.id_cuenta, -existe.perfiles_alquilados);
+            // Incrementar perfiles en la cuenta nueva
+            await CuentaRepository.actualizarPerfilesEnUso(contrato.id_cuenta, contrato.perfiles_alquilados);
+        } else {
+            // Misma cuenta: ajustar la diferencia
+            const diferencia = contrato.perfiles_alquilados - existe.perfiles_alquilados;
+            if(diferencia !== 0){
+                await CuentaRepository.actualizarPerfilesEnUso(contrato.id_cuenta, diferencia);
+            }
+        }
 
         await ContratoRepository.actualizar(id, contrato);
 
@@ -212,7 +216,11 @@ class ContratoService{
         if(!existe){
             throw new Error('Contrato no encontrado');
         }
+
         await ContratoRepository.eliminar(id);
+
+        // Decrementar perfiles_en_uso de la cuenta asociada
+        await CuentaRepository.actualizarPerfilesEnUso(existe.id_cuenta, -existe.perfiles_alquilados);
     }
 
 }

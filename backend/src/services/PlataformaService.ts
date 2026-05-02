@@ -7,16 +7,14 @@ class PlataformaService{
     async crearPlataforma(plataforma:Plataforma):Promise<PlataformaDTO>{
         const id = await PlataformaRepository.crear(plataforma);
         return {
-            nombre: plataforma.nombre,
-            max_perfiles: plataforma.max_perfiles
+            nombre: plataforma.nombre
         }
     }
 
     async obtenerTodas():Promise<PlataformaDTO[]>{
         const plataformas = await PlataformaRepository.obtenerTodas();
         return plataformas.map(p => ({
-            nombre: p.nombre,
-            max_perfiles: p.max_perfiles
+            nombre: p.nombre
         }));
     }
 
@@ -26,8 +24,7 @@ class PlataformaService{
             throw new Error('Plataforma no encontrada');
         }
         return {
-            nombre: plataforma.nombre,
-            max_perfiles: plataforma.max_perfiles
+            nombre: plataforma.nombre
         }
     }
 
@@ -38,8 +35,7 @@ class PlataformaService{
         }
         await PlataformaRepository.actualizar(id, plataforma);
         return {
-            nombre: plataforma.nombre,
-            max_perfiles: plataforma.max_perfiles
+            nombre: plataforma.nombre
         }
     }
 

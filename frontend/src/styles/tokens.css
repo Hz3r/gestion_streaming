@@ -1,0 +1,217 @@
+/* ============================================================
+   DESIGN TOKENS — Gestión de Streaming Dashboard
+   ============================================================
+   Basado en el diseño BankDash adaptado a streaming.
+   Importar este archivo en index.css o main.tsx.
+   ============================================================ */
+
+:root {
+  /* ─────────────────────────────────────────────────────────
+     PALETA PRIMARIA
+     Azul/Índigo — Color principal del dashboard
+     ───────────────────────────────────────────────────────── */
+  --color-primary-50:  #eef2ff;
+  --color-primary-100: #dbe4ff;
+  --color-primary-200: #bac8ff;
+  --color-primary-300: #91a7ff;
+  --color-primary-400: #748ffc;
+  --color-primary-500: #4c6ef5;   /* Base */
+  --color-primary-600: #4263eb;
+  --color-primary-700: #3b5bdb;
+  --color-primary-800: #364fc7;
+  --color-primary-900: #2b3a9e;
+
+  /* ─────────────────────────────────────────────────────────
+     PALETA SECUNDARIA
+     Azul oscuro/Navy — Sidebar y elementos de navegación
+     ───────────────────────────────────────────────────────── */
+  --color-secondary-50:  #e8eaf6;
+  --color-secondary-100: #c5cae9;
+  --color-secondary-200: #9fa8da;
+  --color-secondary-300: #7986cb;
+  --color-secondary-400: #5c6bc0;
+  --color-secondary-500: #2b3674;   /* Base — texto sidebar */
+  --color-secondary-600: #232e5c;
+  --color-secondary-700: #1b2559;
+  --color-secondary-800: #151d48;
+  --color-secondary-900: #0f1535;
+
+  /* ─────────────────────────────────────────────────────────
+     ACENTOS — Para gráficos, badges y estados
+     ───────────────────────────────────────────────────────── */
+  /* Cyan / Teal — Depósitos, ingresos */
+  --color-accent-cyan-50:  #e0f7fa;
+  --color-accent-cyan-100: #b2ebf2;
+  --color-accent-cyan-300: #4dd0e1;
+  --color-accent-cyan-500: #16b1ff;
+  --color-accent-cyan-700: #0097a7;
+
+  /* Verde — Éxito, activo, crecimiento */
+  --color-success-50:  #e8f5e9;
+  --color-success-100: #c8e6c9;
+  --color-success-300: #81c784;
+  --color-success-500: #41c98e;   /* Base */
+  --color-success-700: #2e7d32;
+
+  /* Naranja — Advertencia, pendiente */
+  --color-warning-50:  #fff8e1;
+  --color-warning-100: #ffecb3;
+  --color-warning-300: #ffb74d;
+  --color-warning-500: #ffbb38;   /* Base */
+  --color-warning-700: #f57c00;
+
+  /* Rojo — Error, retiros, eliminación */
+  --color-error-50:  #fce4ec;
+  --color-error-100: #ffcdd2;
+  --color-error-300: #e57373;
+  --color-error-500: #ff4861;     /* Base */
+  --color-error-700: #d32f2f;
+
+  /* Violeta — Para gráficos y estadísticas */
+  --color-violet-50:  #f3e5f5;
+  --color-violet-100: #e1bee7;
+  --color-violet-300: #ba68c8;
+  --color-violet-500: #7c5cfc;    /* Base */
+  --color-violet-700: #6a1b9a;
+
+  /* ─────────────────────────────────────────────────────────
+     GRISES NEUTROS — Fondos, bordes, textos secundarios
+     ───────────────────────────────────────────────────────── */
+  --color-gray-50:  #f8f9fe;  /* Fondo principal del dashboard */
+  --color-gray-100: #f1f3f9;  /* Fondo de tarjetas alt */
+  --color-gray-200: #e6e9f4;  /* Bordes suaves */
+  --color-gray-300: #d5d9eb;  /* Bordes */
+  --color-gray-400: #a3aed0;  /* Texto placeholder / label */
+  --color-gray-500: #8f9bba;  /* Texto secundario */
+  --color-gray-600: #707eae;  /* Texto terciario */
+  --color-gray-700: #4e5d78;  /* Texto cuerpo */
+  --color-gray-800: #2b3674;  /* Texto títulos */
+  --color-gray-900: #1b2559;  /* Texto headers principales */
+
+  /* ─────────────────────────────────────────────────────────
+     FONDOS
+     ───────────────────────────────────────────────────────── */
+  --bg-body:       #f4f7fe;        /* Fondo general del dashboard */
+  --bg-sidebar:    #ffffff;        /* Sidebar blanco */
+  --bg-card:       #ffffff;        /* Tarjetas */
+  --bg-card-hover: #f8f9ff;        /* Tarjeta hover */
+  --bg-input:      #f4f7fe;        /* Inputs */
+  --bg-overlay:    rgba(0, 0, 0, 0.4);  /* Modales overlay */
+
+  /* Gradientes para tarjetas de suscripción/plataforma */
+  --gradient-primary:    linear-gradient(135deg, #4c6ef5 0%, #7c5cfc 100%);
+  --gradient-dark:       linear-gradient(135deg, #1b2559 0%, #2b3674 100%);
+  --gradient-accent:     linear-gradient(135deg, #16b1ff 0%, #4c6ef5 100%);
+  --gradient-success:    linear-gradient(135deg, #41c98e 0%, #16b1ff 100%);
+  --gradient-warning:    linear-gradient(135deg, #ffbb38 0%, #ff4861 100%);
+  --gradient-sidebar:    linear-gradient(180deg, #4c6ef5 0%, #3b5bdb 100%);
+
+  /* ─────────────────────────────────────────────────────────
+     TIPOGRAFÍA
+     ───────────────────────────────────────────────────────── */
+  /* Fuente principal: Inter (importada vía Google Fonts en index.css) */
+  --font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Fuente mono para datos/códigos */
+  --font-family-mono:    'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+
+  /* Tamaños */
+  --font-size-2xs:  0.625rem;  /* 10px */
+  --font-size-xs:   0.75rem;   /* 12px */
+  --font-size-sm:   0.8125rem; /* 13px */
+  --font-size-base: 0.875rem;  /* 14px — tamaño base del dashboard */
+  --font-size-md:   1rem;      /* 16px */
+  --font-size-lg:   1.125rem;  /* 18px */
+  --font-size-xl:   1.25rem;   /* 20px */
+  --font-size-2xl:  1.5rem;    /* 24px */
+  --font-size-3xl:  1.875rem;  /* 30px */
+  --font-size-4xl:  2.25rem;   /* 36px */
+
+  /* Pesos */
+  --font-weight-regular:  400;
+  --font-weight-medium:   500;
+  --font-weight-semibold: 600;
+  --font-weight-bold:     700;
+  --font-weight-extrabold: 800;
+
+  /* Alturas de línea */
+  --line-height-tight:  1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+
+  /* Tracking / Letter spacing */
+  --letter-spacing-tight:  -0.025em;
+  --letter-spacing-normal:  0;
+  --letter-spacing-wide:    0.025em;
+  --letter-spacing-wider:   0.05em;
+
+  /* ─────────────────────────────────────────────────────────
+     BORDES Y RADIOS
+     ───────────────────────────────────────────────────────── */
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   15px;
+  --radius-xl:   20px;
+  --radius-2xl:  25px;
+  --radius-full: 9999px;
+
+  --border-width-thin:    1px;
+  --border-width-medium:  2px;
+  --border-color:         var(--color-gray-200);
+  --border-color-focus:   var(--color-primary-500);
+
+  /* ─────────────────────────────────────────────────────────
+     SOMBRAS
+     ───────────────────────────────────────────────────────── */
+  --shadow-xs:    0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm:    0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md:    0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-lg:    0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+  --shadow-xl:    0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.03);
+  --shadow-card:  0 4px 20px rgba(75, 110, 245, 0.08);   /* Sombra suave con tinte azul */
+  --shadow-sidebar: 4px 0 15px rgba(0, 0, 0, 0.05);
+
+  /* ─────────────────────────────────────────────────────────
+     ESPACIADO
+     ───────────────────────────────────────────────────────── */
+  --space-1:  0.25rem;   /* 4px */
+  --space-2:  0.5rem;    /* 8px */
+  --space-3:  0.75rem;   /* 12px */
+  --space-4:  1rem;      /* 16px */
+  --space-5:  1.25rem;   /* 20px */
+  --space-6:  1.5rem;    /* 24px */
+  --space-8:  2rem;      /* 32px */
+  --space-10: 2.5rem;    /* 40px */
+  --space-12: 3rem;      /* 48px */
+  --space-16: 4rem;      /* 64px */
+  --space-20: 5rem;      /* 80px */
+
+  /* ─────────────────────────────────────────────────────────
+     LAYOUT
+     ───────────────────────────────────────────────────────── */
+  --sidebar-width:       250px;
+  --sidebar-width-collapsed: 80px;
+  --header-height:       70px;
+  --content-max-width:   1400px;
+  --card-padding:        var(--space-6);
+  --page-padding:        var(--space-8);
+
+  /* ─────────────────────────────────────────────────────────
+     TRANSICIONES
+     ───────────────────────────────────────────────────────── */
+  --transition-fast:     150ms ease;
+  --transition-base:     250ms ease;
+  --transition-slow:     350ms ease;
+  --transition-spring:   300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ─────────────────────────────────────────────────────────
+     Z-INDEX
+     ───────────────────────────────────────────────────────── */
+  --z-dropdown:   100;
+  --z-sticky:     200;
+  --z-fixed:      300;
+  --z-sidebar:    400;
+  --z-modal-bg:   500;
+  --z-modal:      600;
+  --z-tooltip:    700;
+  --z-toast:      800;
+}
