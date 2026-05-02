@@ -1,51 +1,145 @@
-// src/pages/PlataformasPage.tsx
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import type { MRT_ColumnDef } from "material-react-table";
 import DataTable from "../components/common/DataTable";
-// ─── Tipo de dato ───
-// Define la forma de una Plataforma (más adelante vendrá de tu API)
+import FormModal from "../components/common/FormModal";
+import FormInput from "../components/common/FormInput";
+import ConfirmDialog from "../components/common/ConfirmDialog";
+import { Tv, Save } from "lucide-react";
+import { getPlataformas, createPlataforma, updatePlataforma, deletePlataforma } from "../services/dashboardService";
+
 type Plataforma = {
-  id: number;
+  id_plataforma: number;
   nombre: string;
-  max_perfiles: number;
 };
-// ─── Datos de prueba (mock) ───
-const MOCK_DATA: Plataforma[] = [
-  { id: 1, nombre: "Netflix", max_perfiles: 5 },
-  { id: 2, nombre: "Disney+", max_perfiles: 4 },
-  { id: 3, nombre: "HBO Max", max_perfiles: 3 },
-  { id: 4, nombre: "Spotify", max_perfiles: 3 },
-  { id: 5, nombre: "Amazon Prime", max_perfiles: 4 },
-];
+
+const INITIAL_FORM = { nombre: "" };
+
 const PlataformasPage = () => {
-  // ─── Definir columnas (memoizadas) ───
+  const [data, setData] = useState<Plataforma[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editItem, setEditItem] = useState<Plataforma | null>(null);
+  const [form, setForm] = useState(INITIAL_FORM);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleteItem, setDeleteItem] = useState<Plataforma | null>(null);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const res = await getPlataformas();
+      setData(res.data);
+    } catch (error) {
+      console.error("Error al cargar plataformas:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const openCreate = () => {
+    setEditItem(null);
+    setForm(INITIAL_FORM);
+    setModalOpen(true);
+  };
+
+  const openEdit = (item: Plataforma) => {
+    setEditItem(item);
+    setForm({ nombre: item.nombre });
+    setModalOpen(true);
+  };
+
+  const openDelete = (item: Plataforma) => {
+    setDeleteItem(item);
+    setConfirmOpen(true);
+  };
+
+  const handleSave = async () => {
+    try {
+      if (editItem) {
+        await updatePlataforma(editItem.id_plataforma, form);
+      } else {
+        await createPlataforma(form);
+      }
+      setModalOpen(false);
+      fetchData();
+    } catch (error) {
+      console.error("Error al guardar plataforma:", error);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteItem) return;
+    try {
+      await deletePlataforma(deleteItem.id_plataforma);
+      setConfirmOpen(false);
+      fetchData();
+    } catch (error) {
+      console.error("Error al eliminar plataforma:", error);
+    }
+  };
+
   const columns = useMemo<MRT_ColumnDef<Plataforma>[]>(
     () => [
-      { accessorKey: "id", header: "ID", size: 60, sortable: true, filterFn: 'equals' },
-      { accessorKey: "nombre", header: "Nombre", size: 300, sortable: true, filterFn: 'contains' },
-      { accessorKey: "max_perfiles", header: "Max Perfiles", size: 300, sortable: true, filterFn: 'between' },
+      { accessorKey: "id_plataforma", header: "ID", size: 80 },
+      { accessorKey: "nombre", header: "Nombre", size: 300 },
     ],
     []
   );
-  // ─── Handlers de acciones ───
-  const handleAdd = () => {
-    console.log("Agregar nueva plataforma");
-  };
-  const handleEdit = (plataforma: Plataforma) => {
-    console.log("Editar:", plataforma);
-  };
-  const handleDelete = (plataforma: Plataforma) => {
-    console.log("Eliminar:", plataforma);
-  };
+
   return (
-    <DataTable<Plataforma>
-      title=""
-      columns={columns}
-      data={MOCK_DATA}
-      onAdd={handleAdd}
-      onEdit={handleEdit}
-      onDelete={handleDelete}
-    />
+    <>
+      <DataTable<Plataforma>
+        columns={columns}
+        data={data}
+        isLoading={loading}
+        onAdd={openCreate}
+        onEdit={openEdit}
+        onDelete={openDelete}
+      />
+
+      <FormModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={editItem ? "Editar Plataforma" : "Nueva Plataforma"}
+        icon={<Tv size={20} />}
+        size="sm"
+        footer={
+          <div className="modal-footer-actions">
+            <button className="btn-secondary" onClick={() => setModalOpen(false)}>Cancelar</button>
+            <button className="btn-primary" onClick={handleSave}>
+              <Save size={16} />
+              {editItem ? "Actualizar" : "Guardar"}
+            </button>
+          </div>
+        }
+      >
+        <div className="form-grid--single">
+          <FormInput
+            label="Nombre de la plataforma"
+            name="nombre"
+            value={form.nombre}
+            onChange={handleChange}
+            placeholder="Ej: Netflix, Disney+, Spotify..."
+            required
+          />
+        </div>
+      </FormModal>
+
+      <ConfirmDialog
+        isOpen={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={handleDelete}
+        message={`¿Estás seguro de eliminar la plataforma "${deleteItem?.nombre}"? Esta acción no se puede deshacer.`}
+      />
+    </>
   );
 };
+
 export default PlataformasPage;

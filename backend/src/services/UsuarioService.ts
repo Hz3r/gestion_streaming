@@ -2,7 +2,7 @@
 import bcrypt from 'bcrypt';
 import UsuarioRepository from '../repositories/UsuarioRepository';
 import Usuario from '../models/Usuario';
-import UsuarioDTO from '../dtos/UsuarioDTO';
+import { UsuarioDTO, UpdatePerfilDTO, UpdatePasswordDTO } from '../dtos/UsuarioDTO';
 
 
 class UsuarioService{
@@ -41,14 +41,39 @@ class UsuarioService{
 
         // 3. Mapear a DTO (No devolvemos la contraseña)
         const userDTO: UsuarioDTO = {
+            id_usuario: usuario.id_usuario,
             nombre: usuario.nombre,
-            id_rol: usuario.id_rol
+            email: usuario.email,
+            id_rol: usuario.id_rol,
+            foto_perfil: usuario.foto_perfil
         };
 
         return userDTO;
     }
 
+    async actualizarPerfil(id:number, datos:UpdatePerfilDTO):Promise<number>{
+        const usuarioExistente = await UsuarioRepository.obtenerPorId(id);
+        if(!usuarioExistente){
+            throw new Error('Usuario no encontrado');
+        }
+        return await UsuarioRepository.actualizarPerfil(id, datos.nombre, datos.email, datos.foto_perfil);
+    }
+
+    async actualizarPassword(id:number, datos:UpdatePasswordDTO):Promise<number>{
+        const usuario = await UsuarioRepository.obtenerPorId(id);
+        if(!usuario) throw new Error('Usuario no encontrado');
+
+        const esCorrecta = await bcrypt.compare(datos.passwordActual, usuario.contraseña);
+        if(!esCorrecta) throw new Error('La contraseña actual es incorrecta');
+
+        const salt = await bcrypt.genSalt(10);
+        const passwordHash = await bcrypt.hash(datos.passwordNueva, salt);
+
+        return await UsuarioRepository.actualizarPassword(id, passwordHash);
+    }
+
     async eliminar(id:number):Promise<number>{
+
         const usuario = await UsuarioRepository.obtenerPorId(id);
         if(!usuario){
             throw new Error('Usuario no encontrado');

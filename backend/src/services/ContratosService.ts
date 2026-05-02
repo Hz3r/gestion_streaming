@@ -141,68 +141,76 @@ class ContratoService{
         }));
     }
 
-    async actualizarContrato(id:number, contrato:Contratos):Promise<ContratosDTO> {
-        // Verificar que el contrato exista
+    async actualizarContrato(id: number, contrato: Contratos): Promise<ContratosDTO> {
+        // 1. Obtener el contrato actual de la base de datos
         const existe = await ContratoRepository.obtenerPorId(id);
-        if(!existe){
+        if (!existe) {
             throw new Error('Contrato no encontrado');
         }
 
-        // Validar que la cuenta exista y esté activa
-        const cuenta = await CuentaRepository.obtenerPorId(contrato.id_cuenta);
-        if(!cuenta){
+        // 2. Normalizar IDs a números para comparaciones seguras
+        const idCuentaActual = Number(existe.id_cuenta);
+        const idCuentaNueva = Number(contrato.id_cuenta);
+        const perfilesNuevos = Number(contrato.perfiles_alquilados);
+        const perfilesAnteriores = Number(existe.perfiles_alquilados);
+
+        // 3. Validar que la cuenta nueva exista y esté activa
+        const cuentaNueva = await CuentaRepository.obtenerPorId(idCuentaNueva);
+        if (!cuentaNueva) {
             throw new Error('La cuenta especificada no existe');
         }
-        if(cuenta.estado === 'Caída'){
+        if (cuentaNueva.estado === 'Caída') {
             throw new Error('No se puede actualizar un contrato a una cuenta caída');
         }
 
-        // Validar disponibilidad de perfiles usando capacidad_total y perfiles_en_uso
-        // Si la cuenta es la misma, restamos los perfiles del contrato actual para no contar doble
-        const perfilesActuales = (existe.id_cuenta === contrato.id_cuenta) ? existe.perfiles_alquilados : 0;
-        const perfilesDisponibles = cuenta.capacidad_total - cuenta.perfiles_en_uso + perfilesActuales;
+        // 4. Validar disponibilidad de perfiles
+        // Si es la misma cuenta, liberamos virtualmente los perfiles actuales para el cálculo
+        const perfilesEnUsoReal = Number(cuentaNueva.perfiles_en_uso);
+        const perfilesDisponibles = (idCuentaActual === idCuentaNueva)
+            ? (Number(cuentaNueva.capacidad_total) - perfilesEnUsoReal + perfilesAnteriores)
+            : (Number(cuentaNueva.capacidad_total) - perfilesEnUsoReal);
 
-        if(contrato.perfiles_alquilados > perfilesDisponibles){
+        if (perfilesNuevos > perfilesDisponibles) {
             throw new Error(
-                `No hay suficientes perfiles disponibles. ` +
-                `Disponibles: ${perfilesDisponibles}, ` +
-                `Solicitados: ${contrato.perfiles_alquilados}`
+                `No hay suficientes perfiles disponibles en la cuenta. ` +
+                `Disponibles: ${perfilesDisponibles}, Solicitados: ${perfilesNuevos}`
             );
         }
 
-        // Validar fechas
+        // 5. Validar fechas
         const fechaInicio = new Date(contrato.fecha_inicio);
         const fechaVencimiento = new Date(contrato.fecha_vencimiento);
-        if(fechaInicio >= fechaVencimiento){
+        if (fechaInicio >= fechaVencimiento) {
             throw new Error('La fecha de inicio debe ser anterior a la fecha de vencimiento');
         }
 
-        // Recalcular precio_total
-        contrato.precio_total = contrato.precio_unitario * contrato.perfiles_alquilados;
+        // 6. Recalcular precio_total
+        contrato.precio_total = Number(contrato.precio_unitario) * perfilesNuevos;
 
-        // Ajustar perfiles_en_uso: restar los anteriores y sumar los nuevos
-        // Si cambió de cuenta, decrementar la cuenta anterior e incrementar la nueva
-        if(existe.id_cuenta !== contrato.id_cuenta){
-            // Decrementar perfiles de la cuenta anterior
-            await CuentaRepository.actualizarPerfilesEnUso(existe.id_cuenta, -existe.perfiles_alquilados);
-            // Incrementar perfiles en la cuenta nueva
-            await CuentaRepository.actualizarPerfilesEnUso(contrato.id_cuenta, contrato.perfiles_alquilados);
+        // 7. Ajustar perfiles_en_uso en las cuentas involucradas
+        if (idCuentaActual !== idCuentaNueva) {
+            // Caso A: Cambió de cuenta
+            // - Restar de la cuenta vieja
+            await CuentaRepository.actualizarPerfilesEnUso(idCuentaActual, -perfilesAnteriores);
+            // - Sumar a la cuenta nueva
+            await CuentaRepository.actualizarPerfilesEnUso(idCuentaNueva, perfilesNuevos);
         } else {
-            // Misma cuenta: ajustar la diferencia
-            const diferencia = contrato.perfiles_alquilados - existe.perfiles_alquilados;
-            if(diferencia !== 0){
-                await CuentaRepository.actualizarPerfilesEnUso(contrato.id_cuenta, diferencia);
+            // Caso B: Misma cuenta, solo cambió la cantidad (o no)
+            const diferencia = perfilesNuevos - perfilesAnteriores;
+            if (diferencia !== 0) {
+                await CuentaRepository.actualizarPerfilesEnUso(idCuentaNueva, diferencia);
             }
         }
 
+        // 8. Actualizar el registro del contrato
         await ContratoRepository.actualizar(id, contrato);
 
         return {
             id_contrato: id,
             id_cliente: contrato.id_cliente,
-            id_cuenta: contrato.id_cuenta,
+            id_cuenta: idCuentaNueva,
             id_metodo: contrato.id_metodo,
-            perfiles_alquilados: contrato.perfiles_alquilados,
+            perfiles_alquilados: perfilesNuevos,
             fecha_inicio: contrato.fecha_inicio,
             fecha_vencimiento: contrato.fecha_vencimiento,
             precio_unitario: contrato.precio_unitario,

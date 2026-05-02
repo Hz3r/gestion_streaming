@@ -1,6 +1,6 @@
 import React from "react"
 import NavLink from "../atom/NavLink"
-import { Home, Users, Tv, CreditCard, Truck, UserCheck, FileText, Shield, User, Settings } from "lucide-react"
+import { Home, Users, Tv, CreditCard, Truck, UserCheck, FileText, BarChart3, Shield, User, Settings } from "lucide-react"
 
 const MENU_ITEMS = [
     { label: "Dashboard", href: "/", icon: Home },
@@ -10,9 +10,9 @@ const MENU_ITEMS = [
     { label: "Proveedores", href: "/proveedores", icon: Truck },
     { label: "Clientes", href: "/clientes", icon: UserCheck },
     { label: "Contratos", href: "/contratos", icon: FileText },
+    { label: "Finanzas", href: "/finanzas", icon: BarChart3 },
     { label: "Roles", href: "/roles", icon: Shield },
     { label: "Usuarios", href: "/usuarios", icon: User },
-    { label: "Configuración", href: "/configuracion", icon: Settings },
 ]
 
 const Sidebar: React.FC = () => {

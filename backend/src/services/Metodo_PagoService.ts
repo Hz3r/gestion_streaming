@@ -5,8 +5,9 @@ import Metodo_PagoDTO from "../dtos/Metodo_PagoDTO";
 class Metodo_PagoService {
 
     async crearMetodo(metodo_pago: Metodo_Pago): Promise<Metodo_PagoDTO> {
-        await Metodo_PagoRepository.crear(metodo_pago);
+        const id = await Metodo_PagoRepository.crear(metodo_pago);
         return {
+            id_metodo: id,
             nombre: metodo_pago.nombre
         }
     }
@@ -14,6 +15,7 @@ class Metodo_PagoService {
     async obtenerTodos(): Promise<Metodo_PagoDTO[]> {
         const metodos = await Metodo_PagoRepository.obtenerTodos();
         return metodos.map(m => ({
+            id_metodo: (m as any).id_metodo,
             nombre: m.nombre
         }));
     }
@@ -24,6 +26,7 @@ class Metodo_PagoService {
             throw new Error('Método de pago no encontrado');
         }
         return {
+            id_metodo: (metodo as any).id_metodo,
             nombre: metodo.nombre
         }
     }
@@ -35,6 +38,7 @@ class Metodo_PagoService {
         }
         await Metodo_PagoRepository.actualizar(id, metodo_pago);
         return {
+            id_metodo: id,
             nombre: metodo_pago.nombre
         }
     }

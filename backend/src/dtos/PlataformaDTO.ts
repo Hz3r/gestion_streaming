@@ -1,5 +1,6 @@
 interface PlataformaDTO{
-    nombre:string
+    id_plataforma?: number;
+    nombre: string;
 }
 
 export default PlataformaDTO

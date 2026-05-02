@@ -1,0 +1,457 @@
+/* ============================================================
+   PAGES STYLES — Componentes visuales específicos de páginas
+   ============================================================ */
+
+/* ─────────────────────────────────────────────────────────
+   BADGES — Estados con color
+   ───────────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-wide);
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.badge--success {
+  background-color: var(--color-success-50);
+  color: var(--color-success-700);
+}
+
+.badge--warning {
+  background-color: var(--color-warning-50);
+  color: var(--color-warning-700);
+}
+
+.badge--error {
+  background-color: var(--color-error-50);
+  color: var(--color-error-700);
+}
+
+.badge--info {
+  background-color: var(--color-primary-50);
+  color: var(--color-primary-700);
+}
+
+/* ─────────────────────────────────────────────────────────
+   STOCK BAR — Barra de ocupación de perfiles
+   ───────────────────────────────────────────────────────── */
+.stock-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 80px;
+}
+
+.stock-bar__track {
+  flex: 1;
+  height: 6px;
+  background-color: var(--color-gray-200);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.stock-bar__fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width var(--transition-base), background-color var(--transition-base);
+}
+
+.stock-bar__label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-600);
+  white-space: nowrap;
+  min-width: 30px;
+  text-align: right;
+}
+
+/* ─────────────────────────────────────────────────────────
+   CONTRATOS PAGE — Layout
+   ───────────────────────────────────────────────────────── */
+.contratos-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.contratos-page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+/* ─── Filtro de periodo ─── */
+.period-filter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background-color: var(--bg-card);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: var(--border-width-thin) solid var(--color-gray-200);
+}
+
+.period-filter__icon {
+  color: var(--color-primary-500);
+  flex-shrink: 0;
+}
+
+.period-filter__select {
+  background-color: transparent;
+  border: none;
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-800);
+  cursor: pointer;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition-fast);
+}
+
+.period-filter__select:hover {
+  background-color: var(--color-gray-50);
+}
+
+.period-filter__select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-primary-200);
+}
+
+/* ─── Botón exportar Excel ─── */
+.btn-export {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-5);
+  background: linear-gradient(135deg, #217346 0%, #2e9e5a 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-export:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+.btn-export:active {
+  transform: translateY(0);
+}
+
+/* ─────────────────────────────────────────────────────────
+   METRICS GRID — Tarjetas de resumen
+   ───────────────────────────────────────────────────────── */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: var(--space-4);
+}
+
+.metric-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-5);
+  border-radius: var(--radius-xl);
+  background-color: var(--bg-card);
+  box-shadow: var(--shadow-card);
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Acento lateral decorativo */
+.metric-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  border-radius: var(--radius-full);
+}
+
+.metric-card--primary::before { background: var(--gradient-primary); }
+.metric-card--success::before { background: linear-gradient(180deg, var(--color-success-500) 0%, var(--color-success-300) 100%); }
+.metric-card--info::before { background: var(--gradient-accent); }
+.metric-card--warning::before { background: linear-gradient(180deg, var(--color-warning-500) 0%, var(--color-warning-300) 100%); }
+.metric-card--violet::before { background: linear-gradient(180deg, var(--color-violet-500) 0%, var(--color-violet-300) 100%); }
+
+.metric-card__label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-gray-500);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wider);
+}
+
+.metric-card__value {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-900);
+  line-height: 1.2;
+}
+
+/* ─────────────────────────────────────────────────────────
+   TABLE LINKS — URLs clickeables en celdas
+   ───────────────────────────────────────────────────────── */
+.table-link {
+  color: var(--color-primary-500);
+  font-size: var(--font-size-xs);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+  word-break: break-all;
+}
+
+.table-link:hover {
+  color: var(--color-primary-700);
+  text-decoration: underline;
+}
+
+/* ─────────────────────────────────────────────────────────
+   PROFILE & SETTINGS PAGES
+   ───────────────────────────────────────────────────────── */
+.profile-page, .settings-page {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.profile-grid, .settings-grid {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: var(--space-6);
+    align-items: start;
+}
+
+.profile-card {
+    background-color: var(--bg-card);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-card);
+    padding: var(--space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    border: 1px solid var(--color-gray-100);
+}
+
+.profile-card--center {
+    align-items: center;
+    text-align: center;
+}
+
+/* ─── Header de tarjeta de perfil ─── */
+.profile-card__header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--color-gray-100);
+}
+
+.profile-card__header h4 {
+    font-size: var(--font-size-md);
+    color: var(--color-gray-800);
+    margin: 0;
+}
+
+.profile-card__icon {
+    color: var(--color-primary-500);
+}
+
+/* ─── Avatar Grande ─── */
+.profile-avatar-edit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.profile-avatar-large {
+    width: 120px;
+    height: 120px;
+    border-radius: var(--radius-full);
+    background: var(--gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: var(--shadow-lg);
+}
+
+.profile-avatar-initials {
+    font-size: 3rem;
+    font-weight: var(--font-weight-bold);
+    color: #ffffff;
+}
+
+.profile-avatar-btn {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-full);
+    background-color: #ffffff;
+    border: 1px solid var(--color-gray-200);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-primary-500);
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-fast);
+}
+
+.profile-avatar-btn:hover {
+    background-color: var(--color-primary-50);
+    transform: scale(1.1);
+}
+
+.profile-role {
+    font-size: var(--font-size-sm);
+    color: var(--color-gray-500);
+    font-weight: var(--font-weight-medium);
+}
+
+/* ─── Stats en perfil ─── */
+.profile-stats {
+    display: flex;
+    width: 100%;
+    justify-content: space-around;
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-gray-100);
+}
+
+.profile-stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.profile-stat-value {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-gray-800);
+}
+
+.profile-stat-label {
+    font-size: var(--font-size-xs);
+    color: var(--color-gray-500);
+}
+
+.profile-divider-v {
+    width: 1px;
+    background: var(--color-gray-100);
+}
+
+/* ─── Formularios en perfil ─── */
+.profile-forms-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+.profile-form__actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: var(--space-4);
+}
+
+/* ─── Settings específicos ─── */
+.settings-grid {
+    grid-template-columns: 1fr; /* Por ahora una sola columna para settings */
+    max-width: 900px;
+}
+
+.settings-logo-upload {
+    padding: var(--space-4);
+    background-color: var(--color-gray-50);
+    border-radius: var(--radius-lg);
+    border: 1px dashed var(--color-gray-300);
+}
+
+.logo-preview-container {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    margin-top: var(--space-3);
+}
+
+.logo-preview {
+    width: 80px;
+    height: 80px;
+    background-color: #ffffff;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-gray-200);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-preview-icon {
+    color: var(--color-gray-300);
+}
+
+.logo-upload-info p {
+    font-size: var(--font-size-xs);
+    color: var(--color-gray-500);
+    margin-bottom: var(--space-2);
+}
+
+.btn-sm {
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--font-size-xs);
+}
+
+/* ─────────────────────────────────────────────────────────
+   RESPONSIVE
+   ───────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+    .profile-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .contratos-page__header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .period-filter {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+

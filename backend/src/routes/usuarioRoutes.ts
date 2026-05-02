@@ -21,4 +21,11 @@ router.get('/', UsuarioController.obtenerTodos);
 // GET /api/usuarios/:id - Obtener un usuario por ID
 router.get('/:id', UsuarioController.obtenerPorId);
 
+// PUT /api/usuarios/perfil/:id - Actualizar perfil
+router.put('/perfil/:id', UsuarioController.actualizarPerfil);
+
+// PUT /api/usuarios/password/:id - Actualizar contraseña
+router.put('/password/:id', UsuarioController.actualizarPassword);
+
 export default router;
+

@@ -1,0 +1,641 @@
+/* ============================================================
+   FORMS & MODALS — Componentes reutilizables de formularios
+   ============================================================ */
+
+/* ─────────────────────────────────────────────────────────
+   MODAL — Overlay, contenido, header, body, footer
+   ───────────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal-bg);
+  animation: modal-fadeIn 0.2s ease;
+  padding: var(--space-6);
+}
+
+@keyframes modal-fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-content {
+  background-color: var(--bg-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  width: 100%;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  animation: modal-slideUp 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+}
+
+@keyframes modal-slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-content__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-5) var(--space-6);
+  border-bottom: var(--border-width-thin) solid var(--color-gray-200);
+  background-color: var(--color-gray-50);
+}
+
+.modal-content__header h4 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-lg);
+  color: var(--color-gray-800);
+  margin: 0;
+}
+
+.modal-content__icon {
+  display: flex;
+  align-items: center;
+  color: var(--color-primary-500);
+}
+
+.modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: var(--color-gray-200);
+  border-radius: var(--radius-full);
+  color: var(--color-gray-500);
+  cursor: pointer;
+  padding: 0;
+  transition: all var(--transition-fast);
+}
+
+.modal-close:hover {
+  background: var(--color-error-50);
+  color: var(--color-error-500);
+}
+
+.modal-content__body {
+  padding: var(--space-5) var(--space-6);
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-content__footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: var(--space-4) var(--space-6);
+  border-top: var(--border-width-thin) solid var(--color-gray-200);
+  background-color: var(--color-gray-50);
+}
+
+/* ─── Vacío (sin datos) ─── */
+.modal-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-10);
+  text-align: center;
+}
+
+.modal-empty p {
+  font-size: var(--font-size-md);
+  color: var(--color-gray-600);
+}
+
+/* ─────────────────────────────────────────────────────────
+   FORM LAYOUT — Grid de campos
+   ───────────────────────────────────────────────────────── */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4);
+}
+
+.form-grid--single {
+  grid-template-columns: 1fr;
+}
+
+.form-grid--triple {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* Campo que ocupa todo el ancho */
+.form-field--full {
+  grid-column: 1 / -1;
+}
+
+/* ─────────────────────────────────────────────────────────
+   FORM FIELD — Input / Select individual
+   ───────────────────────────────────────────────────────── */
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.form-field__label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-700);
+  margin-bottom: var(--space-2);
+}
+
+.form-field__input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.form-field__input {
+  width: 100%;
+}
+
+.form-field__toggle {
+  position: absolute;
+  right: var(--space-3);
+  background: none;
+  border: none;
+  padding: var(--space-1);
+  color: var(--color-gray-400);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.form-field__toggle:hover {
+  color: var(--color-primary-500);
+}
+
+.form-field__required {
+  color: var(--color-error-500);
+  margin-left: 2px;
+}
+
+.form-field__input,
+.form-field__select {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-800);
+  background-color: var(--bg-input);
+  border: var(--border-width-thin) solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
+  width: 100%;
+}
+
+.form-field__input:focus,
+.form-field__select:focus {
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 3px rgba(76, 110, 245, 0.12);
+  background-color: #ffffff;
+}
+
+.form-field__input:disabled,
+.form-field__select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: var(--color-gray-100);
+}
+
+.form-field__input::placeholder {
+  color: var(--color-gray-400);
+}
+
+.form-field__select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23707eae' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: var(--space-8);
+  cursor: pointer;
+}
+
+/* ─── Estado de error ─── */
+.form-field--error .form-field__input,
+.form-field--error .form-field__select {
+  border-color: var(--color-error-500);
+  box-shadow: 0 0 0 3px rgba(255, 72, 97, 0.1);
+}
+
+.form-field__error {
+  font-size: 11px;
+  color: var(--color-error-500);
+  font-weight: var(--font-weight-medium);
+}
+
+/* ─────────────────────────────────────────────────────────
+   BOTONES DE FORMULARIO
+   ───────────────────────────────────────────────────────── */
+.modal-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  justify-content: flex-end;
+}
+
+/* Botón secundario (Cancelar) */
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-5);
+  background-color: var(--bg-input);
+  color: var(--color-gray-700);
+  border: var(--border-width-thin) solid var(--color-gray-300);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-gray-100);
+  border-color: var(--color-gray-400);
+}
+
+/* Botón primario (Guardar) */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-5);
+  background: var(--gradient-primary);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Botón confirmar (danger/warning) */
+.btn-confirm {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-5);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-confirm--danger {
+  background: linear-gradient(135deg, var(--color-error-500) 0%, var(--color-error-700) 100%);
+}
+
+.btn-confirm--danger:hover {
+  box-shadow: 0 4px 12px rgba(255, 72, 97, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-confirm--warning {
+  background: linear-gradient(135deg, var(--color-warning-500) 0%, var(--color-warning-700) 100%);
+}
+
+.btn-confirm--warning:hover {
+  box-shadow: 0 4px 12px rgba(255, 187, 56, 0.35);
+  transform: translateY(-1px);
+}
+
+/* ─── Confirm dialog body ─── */
+.confirm-dialog__body {
+  text-align: center;
+  padding: var(--space-4) 0;
+}
+
+.confirm-dialog__body p {
+  font-size: var(--font-size-base);
+  color: var(--color-gray-700);
+  line-height: var(--line-height-relaxed);
+}
+
+/* ─────────────────────────────────────────────────────────
+   COMBOBOX — Select con búsqueda
+   ───────────────────────────────────────────────────────── */
+
+/* ─── Trigger (botón que abre el dropdown) ─── */
+.combobox-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-800);
+  background-color: var(--bg-input);
+  border: var(--border-width-thin) solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  min-height: 42px;
+  user-select: none;
+}
+
+.combobox-trigger:hover {
+  border-color: var(--color-gray-300);
+}
+
+.combobox-trigger--open {
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 3px rgba(76, 110, 245, 0.12);
+  background-color: #ffffff;
+}
+
+.combobox-trigger--disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.combobox-trigger__text {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.combobox-trigger__placeholder {
+  color: var(--color-gray-400);
+}
+
+.combobox-trigger__actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.combobox-trigger__clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: var(--color-gray-200);
+  border-radius: var(--radius-full);
+  color: var(--color-gray-500);
+  cursor: pointer;
+  padding: 0;
+  transition: all var(--transition-fast);
+}
+
+.combobox-trigger__clear:hover {
+  background: var(--color-error-50);
+  color: var(--color-error-500);
+}
+
+.combobox-trigger__arrow {
+  color: var(--color-gray-400);
+  transition: transform var(--transition-fast);
+}
+
+.combobox-trigger__arrow--open {
+  transform: rotate(180deg);
+}
+
+/* ─── Error state en trigger ─── */
+.form-field--error .combobox-trigger {
+  border-color: var(--color-error-500);
+  box-shadow: 0 0 0 3px rgba(255, 72, 97, 0.1);
+}
+
+/* ─── Dropdown (lista desplegable) ─── */
+.combobox-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: var(--z-dropdown);
+  background-color: var(--bg-card);
+  border: var(--border-width-thin) solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  margin-top: 4px;
+  animation: combobox-slideDown 0.15s ease;
+  overflow: hidden;
+}
+
+@keyframes combobox-slideDown {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Campo de búsqueda ─── */
+.combobox-search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: var(--border-width-thin) solid var(--color-gray-200);
+  background-color: var(--color-gray-50);
+}
+
+.combobox-search__icon {
+  color: var(--color-gray-400);
+  flex-shrink: 0;
+}
+
+.combobox-search__input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-800);
+  outline: none;
+  min-width: 0;
+}
+
+.combobox-search__input::placeholder {
+  color: var(--color-gray-400);
+}
+
+.combobox-search__count {
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary-600);
+  background-color: var(--color-primary-50);
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+/* ─── Lista de opciones ─── */
+.combobox-list {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-1) 0;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.combobox-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.combobox-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.combobox-list::-webkit-scrollbar-thumb {
+  background: var(--color-gray-300);
+  border-radius: var(--radius-full);
+}
+
+/* ─── Opción individual ─── */
+.combobox-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-4);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.combobox-option:hover {
+  background-color: var(--color-primary-50);
+}
+
+.combobox-option--selected {
+  background-color: var(--color-primary-50);
+}
+
+.combobox-option--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.combobox-option--disabled:hover {
+  background-color: transparent;
+}
+
+.combobox-option__content {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.combobox-option__label {
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-800);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.combobox-option__sublabel {
+  font-size: 11px;
+  color: var(--color-gray-400);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.combobox-option__check {
+  color: var(--color-primary-500);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-sm);
+  flex-shrink: 0;
+  margin-left: var(--space-2);
+}
+
+/* ─── Empty state ─── */
+.combobox-empty {
+  padding: var(--space-4);
+  text-align: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-400);
+}
+
+/* ─── Group headers ─── */
+.combobox-group {
+  list-style: none;
+}
+
+.combobox-group__label {
+  display: block;
+  padding: var(--space-2) var(--space-4) var(--space-1);
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary-500);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wider);
+}
+
+.combobox-group ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* ─── form-field necesita position relative para el dropdown ─── */
+.form-field {
+  position: relative;
+}
+
+/* ─────────────────────────────────────────────────────────
+   RESPONSIVE
+   ───────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .modal-content {
+    max-width: 100% !important;
+    margin: var(--space-4);
+    max-height: 90vh;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-grid--triple {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-footer-actions {
+    flex-direction: column-reverse;
+  }
+
+  .modal-footer-actions .btn-secondary,
+  .modal-footer-actions .btn-primary,
+  .modal-footer-actions .btn-confirm {
+    width: 100%;
+    justify-content: center;
+  }
+}

@@ -7,6 +7,7 @@ class PlataformaService{
     async crearPlataforma(plataforma:Plataforma):Promise<PlataformaDTO>{
         const id = await PlataformaRepository.crear(plataforma);
         return {
+            id_plataforma: id,
             nombre: plataforma.nombre
         }
     }
@@ -14,6 +15,7 @@ class PlataformaService{
     async obtenerTodas():Promise<PlataformaDTO[]>{
         const plataformas = await PlataformaRepository.obtenerTodas();
         return plataformas.map(p => ({
+            id_plataforma: p.id_plataforma,
             nombre: p.nombre
         }));
     }
@@ -24,6 +26,7 @@ class PlataformaService{
             throw new Error('Plataforma no encontrada');
         }
         return {
+            id_plataforma: plataforma.id_plataforma,
             nombre: plataforma.nombre
         }
     }
@@ -35,6 +38,7 @@ class PlataformaService{
         }
         await PlataformaRepository.actualizar(id, plataforma);
         return {
+            id_plataforma: id,
             nombre: plataforma.nombre
         }
     }

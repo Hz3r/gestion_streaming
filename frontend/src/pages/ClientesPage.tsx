@@ -1,6 +1,12 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import type { MRT_ColumnDef } from "material-react-table";
 import DataTable from "../components/common/DataTable";
+import FormModal from "../components/common/FormModal";
+import FormInput from "../components/common/FormInput";
+import FormSelect from "../components/common/FormSelect";
+import ConfirmDialog from "../components/common/ConfirmDialog";
+import { UserCheck, Save } from "lucide-react";
+import { getClientes, createCliente, updateCliente, deleteCliente } from "../services/dashboardService";
 
 type Cliente = {
   id_cliente: number;
@@ -9,34 +15,161 @@ type Cliente = {
   estado: string;
 };
 
-const MOCK_DATA: Cliente[] = [
-  { id_cliente: 1, nombre: "Carlos Mendoza", telefono: "987654321", estado: "Activo" },
-  { id_cliente: 2, nombre: "María López", telefono: "912345678", estado: "Activo" },
-  { id_cliente: 3, nombre: "José García", telefono: "956789012", estado: "Inactivo" },
-  { id_cliente: 4, nombre: "Ana Torres", telefono: "934567890", estado: "Activo" },
-  { id_cliente: 5, nombre: "Luis Ramírez", telefono: "976543210", estado: "Activo" },
-  { id_cliente: 6, nombre: "Sofía Vargas", telefono: "945678123", estado: "Moroso" },
+const INITIAL_FORM = { nombre: "", telefono: "", estado: "Activo" };
+
+const ESTADOS = [
+  { value: "Activo", label: "Activo" },
+  { value: "Inactivo", label: "Inactivo" },
+  { value: "Moroso", label: "Moroso" },
 ];
 
 const ClientesPage = () => {
+  const [data, setData] = useState<Cliente[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editItem, setEditItem] = useState<Cliente | null>(null);
+  const [form, setForm] = useState(INITIAL_FORM);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleteItem, setDeleteItem] = useState<Cliente | null>(null);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const res = await getClientes();
+      setData(res.data);
+    } catch (error) {
+      console.error("Error al cargar clientes:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const openCreate = () => { setEditItem(null); setForm(INITIAL_FORM); setModalOpen(true); };
+  const openEdit = (item: Cliente) => {
+    setEditItem(item);
+    setForm({ nombre: item.nombre, telefono: item.telefono, estado: item.estado });
+    setModalOpen(true);
+  };
+  const openDelete = (item: Cliente) => { setDeleteItem(item); setConfirmOpen(true); };
+
+  const handleSave = async () => {
+    try {
+      if (editItem) {
+        await updateCliente(editItem.id_cliente, form);
+      } else {
+        await createCliente(form);
+      }
+      setModalOpen(false);
+      fetchData();
+    } catch (error) {
+      console.error("Error al guardar cliente:", error);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteItem) return;
+    try {
+      await deleteCliente(deleteItem.id_cliente);
+      setConfirmOpen(false);
+      fetchData();
+    } catch (error) {
+      console.error("Error al eliminar cliente:", error);
+    }
+  };
+
   const columns = useMemo<MRT_ColumnDef<Cliente>[]>(
     () => [
       { accessorKey: "id_cliente", header: "ID", size: 80 },
       { accessorKey: "nombre", header: "Nombre", size: 220 },
       { accessorKey: "telefono", header: "Teléfono", size: 150 },
-      { accessorKey: "estado", header: "Estado", size: 120 },
+      {
+        accessorKey: "estado",
+        header: "Estado",
+        size: 120,
+        Cell: ({ cell }) => {
+          const val = cell.getValue<string>();
+          const cls =
+            val === "Activo" ? "badge badge--success" :
+            val === "Moroso" ? "badge badge--error" :
+            "badge badge--warning";
+          return <span className={cls}>{val}</span>;
+        },
+      },
     ],
     []
   );
 
   return (
-    <DataTable<Cliente>
-      columns={columns}
-      data={MOCK_DATA}
-      onAdd={() => console.log("Agregar cliente")}
-      onEdit={(c) => console.log("Editar:", c)}
-      onDelete={(c) => console.log("Eliminar:", c)}
-    />
+    <>
+      <DataTable<Cliente>
+        columns={columns}
+        data={data}
+        isLoading={loading}
+        onAdd={openCreate}
+        onEdit={openEdit}
+        onDelete={openDelete}
+      />
+
+      <FormModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={editItem ? "Editar Cliente" : "Nuevo Cliente"}
+        icon={<UserCheck size={20} />}
+        size="md"
+        footer={
+          <div className="modal-footer-actions">
+            <button className="btn-secondary" onClick={() => setModalOpen(false)}>Cancelar</button>
+            <button className="btn-primary" onClick={handleSave}>
+              <Save size={16} />
+              {editItem ? "Actualizar" : "Guardar"}
+            </button>
+          </div>
+        }
+      >
+        <div className="form-grid">
+          <FormInput
+            label="Nombre completo"
+            name="nombre"
+            value={form.nombre}
+            onChange={handleChange}
+            placeholder="Ej: Carlos Mendoza"
+            required
+          />
+          <FormInput
+            label="Teléfono"
+            name="telefono"
+            type="tel"
+            value={form.telefono}
+            onChange={handleChange}
+            placeholder="Ej: 987654321"
+            required
+          />
+          <FormSelect
+            label="Estado"
+            name="estado"
+            value={form.estado}
+            onChange={handleChange}
+            options={ESTADOS}
+            required
+          />
+        </div>
+      </FormModal>
+
+      <ConfirmDialog
+        isOpen={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={handleDelete}
+        message={`¿Estás seguro de eliminar al cliente "${deleteItem?.nombre}"?`}
+      />
+    </>
   );
 };
 

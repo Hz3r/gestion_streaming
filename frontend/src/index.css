@@ -17,6 +17,15 @@
 /* ─── DataTable ─── */
 @import './styles/data-table.css';
 
+/* ─── Forms & Modals ─── */
+@import './styles/forms.css';
+
+/* ─── Pages (badges, metrics, filtros) ─── */
+@import './styles/pages.css';
+
+/* ─── Finanzas ─── */
+@import './styles/finanzas.css';
+
 /* ============================================================
    RESET & BASE
    ============================================================ */

@@ -69,47 +69,53 @@ class ContratoRepository{
     }
 
     //obtener detalle del contrato con JOINs
-    async obtenerDetalleTodos():Promise<ContratosDetalleDTO[]> {
+    async obtenerDetalleTodos(): Promise<any[]> {
         const sql = `SELECT 
             c.id_contrato,
-            u.nombre AS nombre_cliente,
-            cu.email AS email_cuenta,
-            p.nombre AS nombre_plataforma,
-            mp.nombre AS nombre_metodo_pago,
+            u.nombre AS cliente,
+            cu.email AS cuenta,
+            p.nombre AS plataforma,
+            mp.nombre AS metodo_pago,
             c.perfiles_alquilados,
             c.fecha_inicio,
             c.fecha_vencimiento,
             c.precio_unitario,
             c.precio_total,
-            c.estado_pagado
+            c.estado_pagado,
+            c.id_cliente,
+            c.id_cuenta,
+            c.id_metodo
         FROM contratos c
         INNER JOIN usuarios u ON c.id_cliente = u.id_usuario
         INNER JOIN cuentas cu ON c.id_cuenta = cu.id_cuenta
         INNER JOIN plataformas p ON cu.id_plataforma = p.id_plataforma
-        INNER JOIN metodos_pago mp ON c.id_metodo = mp.id_metodo_pago`;
+        INNER JOIN metodo_pago mp ON c.id_metodo = mp.id_metodo`;
         const [rows]:any = await pool.execute(sql);
         return rows;
     }
 
     //obtener detalle de un contrato por id con JOINs
-    async obtenerDetallePorId(id:number):Promise<ContratosDetalleDTO | null> {
+    async obtenerDetallePorId(id: number): Promise<any | null> {
         const sql = `SELECT 
             c.id_contrato,
-            u.nombre AS nombre_cliente,
-            cu.email AS email_cuenta,
-            p.nombre AS nombre_plataforma,
-            mp.nombre AS nombre_metodo_pago,
+            u.nombre AS cliente,
+            cu.email AS cuenta,
+            p.nombre AS plataforma,
+            mp.nombre AS metodo_pago,
             c.perfiles_alquilados,
             c.fecha_inicio,
             c.fecha_vencimiento,
             c.precio_unitario,
             c.precio_total,
-            c.estado_pagado
+            c.estado_pagado,
+            c.id_cliente,
+            c.id_cuenta,
+            c.id_metodo
         FROM contratos c
         INNER JOIN usuarios u ON c.id_cliente = u.id_usuario
         INNER JOIN cuentas cu ON c.id_cuenta = cu.id_cuenta
         INNER JOIN plataformas p ON cu.id_plataforma = p.id_plataforma
-        INNER JOIN metodos_pago mp ON c.id_metodo = mp.id_metodo_pago
+        INNER JOIN metodo_pago mp ON c.id_metodo = mp.id_metodo
         WHERE c.id_contrato = ?`;
         const [rows]:any = await pool.execute(sql,[id]);
         return rows.length > 0 ? rows[0] : null;

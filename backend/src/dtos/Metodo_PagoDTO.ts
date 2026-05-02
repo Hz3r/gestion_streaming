@@ -1,5 +1,6 @@
 interface Metodo_PagoDTO{
-    nombre:string
+    id_metodo?: number;
+    nombre: string;
 }
 
 export default Metodo_PagoDTO;

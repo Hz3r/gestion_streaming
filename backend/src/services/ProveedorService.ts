@@ -5,8 +5,9 @@ import ProveedorDTO from "../dtos/ProveedorDTO";
 class ProveedorService {
 
     async crearProveedor(proveedor: Proveedor): Promise<ProveedorDTO> {
-        await ProveedorRepository.crearProveedor(proveedor);
+        const id = await ProveedorRepository.crearProveedor(proveedor);
         return {
+            id_proveedor: id,
             nombre: proveedor.nombre,
             url_contacto: proveedor.url_contacto,
             reputacion: proveedor.reputacion
@@ -16,6 +17,7 @@ class ProveedorService {
     async obtenerTodos(): Promise<ProveedorDTO[]> {
         const proveedores = await ProveedorRepository.obtenerTodos();
         return proveedores.map(p => ({
+            id_proveedor: p.id_proveedor,
             nombre: p.nombre,
             url_contacto: p.url_contacto,
             reputacion: p.reputacion
@@ -28,6 +30,7 @@ class ProveedorService {
             throw new Error('Proveedor no encontrado');
         }
         return {
+            id_proveedor: proveedor.id_proveedor,
             nombre: proveedor.nombre,
             url_contacto: proveedor.url_contacto,
             reputacion: proveedor.reputacion
@@ -41,6 +44,7 @@ class ProveedorService {
         }
         await ProveedorRepository.actualizar(id, proveedor);
         return {
+            id_proveedor: id,
             nombre: proveedor.nombre,
             url_contacto: proveedor.url_contacto,
             reputacion: proveedor.reputacion

@@ -15,6 +15,7 @@ interface DataTableProps<T extends Record<string, any>> {
     onAdd?: () => void;                // Callback al hacer clic en "Agregar"
     onEdit?: (row: T) => void;         // Callback al hacer clic en "Editar"
     onDelete?: (row: T) => void;       // Callback al hacer clic en "Eliminar"
+    renderExtraActions?: (row: T) => React.ReactNode; // New prop
     isLoading?: boolean;               // Estado de carga
 }
 function DataTable<T extends Record<string, any>>({
@@ -24,6 +25,7 @@ function DataTable<T extends Record<string, any>>({
     onAdd,
     onEdit,
     onDelete,
+    renderExtraActions,
     isLoading = false,
 }: DataTableProps<T>) {
     // ─── Configuración de la tabla ───
@@ -31,10 +33,11 @@ function DataTable<T extends Record<string, any>>({
         columns,
         data,
         // ─── Acciones por fila ───
-        enableRowActions: !!(onEdit || onDelete),
+        enableRowActions: !!(onEdit || onDelete || renderExtraActions),
         positionActionsColumn: "last",
         renderRowActions: ({ row }) => (
             <Box sx={{ display: "flex", gap: "2px" }}>
+                {renderExtraActions && renderExtraActions(row.original)}
                 {onEdit && (
                     <Tooltip title="Editar">
                         <IconButton

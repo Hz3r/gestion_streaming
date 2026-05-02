@@ -11,25 +11,25 @@ class Metodo_PagoRepository {
     }
 
     async obtenerTodos(): Promise<Metodo_Pago[]> {
-        const sql = 'SELECT id_metodo_pago, nombre FROM metodo_pago';
+        const sql = 'SELECT id_metodo, nombre FROM metodo_pago';
         const [rows]: any = await pool.execute(sql);
         return rows;
     }
 
     async obtenerPorId(id: number): Promise<Metodo_Pago | null> {
-        const sql = 'SELECT id_metodo_pago, nombre FROM metodo_pago WHERE id_metodo_pago = ?';
+        const sql = 'SELECT id_metodo, nombre FROM metodo_pago WHERE id_metodo = ?';
         const [rows]: any = await pool.execute(sql, [id]);
         return rows.length > 0 ? rows[0] : null;
     }
 
     async actualizar(id: number, metodo_pago: Metodo_Pago): Promise<number> {
-        const sql = 'UPDATE metodo_pago SET nombre = ? WHERE id_metodo_pago = ?';
+        const sql = 'UPDATE metodo_pago SET nombre = ? WHERE id_metodo = ?';
         const [result]: any = await pool.execute(sql, [metodo_pago.nombre, id]);
         return result.affectedRows;
     }
 
     async eliminar(id: number): Promise<number> {
-        const sql = 'DELETE FROM metodo_pago WHERE id_metodo_pago = ?';
+        const sql = 'DELETE FROM metodo_pago WHERE id_metodo = ?';
         const [result]: any = await pool.execute(sql, [id]);
         return result.affectedRows;
     }

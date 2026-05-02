@@ -13,9 +13,11 @@ const PAGE_TITLES: Record<string, string> = {
     "/proveedores": "Proveedores",
     "/clientes": "Clientes",
     "/contratos": "Contratos",
+    "/finanzas": "Finanzas",
     "/roles": "Roles",
     "/usuarios": "Usuarios",
-    "/configuracion": "Configuración",
+    "/configuracion": "Configuración del Sistema",
+    "/perfil": "Mi Perfil",
 }
 
 const DashboardTemplate: React.FC = () => {

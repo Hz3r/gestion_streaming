@@ -91,6 +91,29 @@ class UsuarioController {
         }
     }
 
+    async actualizarPerfil(req: Request, res: Response) {
+        try {
+            const id = parseInt(req.params.id as string);
+            const datos = req.body;
+            await UsuarioService.actualizarPerfil(id, datos);
+            res.json({ message: 'Perfil actualizado con éxito' });
+        } catch (error: any) {
+            res.status(400).json({ message: error.message });
+        }
+    }
+
+    async actualizarPassword(req: Request, res: Response) {
+        try {
+            const id = parseInt(req.params.id as string);
+            const datos = req.body;
+            await UsuarioService.actualizarPassword(id, datos);
+            res.json({ message: 'Contraseña actualizada con éxito' });
+        } catch (error: any) {
+            res.status(400).json({ message: error.message });
+        }
+    }
+
 }
+
 
 export default new UsuarioController();
