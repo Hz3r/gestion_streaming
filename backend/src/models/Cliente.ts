@@ -3,6 +3,7 @@ interface Cliente {
     nombre: string;
     telefono: string;
     estado: 'Activo' | 'Inactivo' | 'Moroso';
+    tipo?: string;
 }
 
 export default Cliente;

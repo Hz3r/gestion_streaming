@@ -12,8 +12,8 @@ class ContratoRepository{
             // Insertar Maestro
             const sql = `INSERT INTO contratos(
                 id_cliente, id_metodo, fecha_inicio, fecha_vencimiento, 
-                precio_unitario, precio_total, estado_pagado
-            ) VALUES (?,?,?,?,?,?,?)`;
+                precio_unitario, precio_total, estado_pagado, tipo_contrato
+            ) VALUES (?,?,?,?,?,?,?,?)`;
             
             const [result]:any = await connection.execute(sql,[
                 contrato.id_cliente ?? null, 
@@ -22,7 +22,8 @@ class ContratoRepository{
                 contrato.fecha_vencimiento ?? null, 
                 contrato.precio_unitario ?? 0, 
                 contrato.precio_total ?? 0, 
-                contrato.estado_pagado ?? 0
+                contrato.estado_pagado ?? 0,
+                contrato.tipo_contrato || 'Directo'
             ]);
             
             const id_contrato = result.insertId;
@@ -91,6 +92,7 @@ class ContratoRepository{
             c.precio_unitario,
             c.precio_total,
             c.estado_pagado,
+            c.tipo_contrato,
             c.id_cliente,
             c.id_metodo,
             JSON_ARRAYAGG(
@@ -123,6 +125,7 @@ class ContratoRepository{
             c.precio_unitario,
             c.precio_total,
             c.estado_pagado,
+            c.tipo_contrato,
             c.id_cliente,
             c.id_metodo,
             JSON_ARRAYAGG(
@@ -154,7 +157,7 @@ class ContratoRepository{
             const sql = `UPDATE contratos SET 
                 id_cliente = ?, id_metodo = ?, fecha_inicio = ?, 
                 fecha_vencimiento = ?, precio_unitario = ?, 
-                precio_total = ?, estado_pagado = ? 
+                precio_total = ?, estado_pagado = ?, tipo_contrato = ? 
                 WHERE id_contrato = ?`;
                 
             await connection.execute(sql,[
@@ -165,6 +168,7 @@ class ContratoRepository{
                 contrato.precio_unitario ?? 0, 
                 contrato.precio_total ?? 0, 
                 contrato.estado_pagado ?? 0, 
+                contrato.tipo_contrato || 'Directo',
                 id ?? null
             ]);
 

@@ -22,10 +22,12 @@ class CuentaRepository {
             SELECT 
                 c.*, 
                 p.nombre as plataforma, 
-                pr.nombre as proveedor 
+                pr.nombre as proveedor,
+                crd.fecha_cancelacion_requerida 
             FROM cuentas c
             INNER JOIN plataformas p ON c.id_plataforma = p.id_plataforma
             INNER JOIN proveedores pr ON c.id_proveedor = pr.id_proveedor
+            LEFT JOIN cuentas_rotativas_detalles crd ON c.id_cuenta = crd.id_cuenta_fija
         `;
         const [rows]: any = await pool.execute(sql);
         return rows;

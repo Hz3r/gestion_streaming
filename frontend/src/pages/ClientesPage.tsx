@@ -13,14 +13,20 @@ type Cliente = {
   nombre: string;
   telefono: string;
   estado: string;
+  tipo: string;
 };
 
-const INITIAL_FORM = { nombre: "", telefono: "", estado: "Activo" };
+const INITIAL_FORM = { nombre: "", telefono: "", estado: "Activo", tipo: "Directo" };
 
 const ESTADOS = [
   { value: "Activo", label: "Activo" },
   { value: "Inactivo", label: "Inactivo" },
   { value: "Moroso", label: "Moroso" },
+];
+
+const TIPOS = [
+  { value: "Directo", label: "Directo" },
+  { value: "Lank", label: "Lank" },
 ];
 
 const ClientesPage = () => {
@@ -55,7 +61,7 @@ const ClientesPage = () => {
   const openCreate = () => { setEditItem(null); setForm(INITIAL_FORM); setModalOpen(true); };
   const openEdit = (item: Cliente) => {
     setEditItem(item);
-    setForm({ nombre: item.nombre, telefono: item.telefono, estado: item.estado });
+    setForm({ nombre: item.nombre, telefono: item.telefono, estado: item.estado, tipo: item.tipo || "Directo" });
     setModalOpen(true);
   };
   const openDelete = (item: Cliente) => { setDeleteItem(item); setConfirmOpen(true); };
@@ -90,6 +96,16 @@ const ClientesPage = () => {
       { accessorKey: "id_cliente", header: "ID", size: 80 },
       { accessorKey: "nombre", header: "Nombre", size: 220 },
       { accessorKey: "telefono", header: "Teléfono", size: 150 },
+      {
+        accessorKey: "tipo",
+        header: "Tipo",
+        size: 100,
+        Cell: ({ cell }) => {
+          const val = cell.getValue<string>();
+          const cls = val === "Lank" ? "badge badge--info" : "badge badge--warning";
+          return <span className={cls}>{val || "Directo"}</span>;
+        }
+      },
       {
         accessorKey: "estado",
         header: "Estado",
@@ -150,6 +166,14 @@ const ClientesPage = () => {
             value={form.telefono}
             onChange={handleChange}
             placeholder="Ej: 987654321"
+            required
+          />
+          <FormSelect
+            label="Tipo"
+            name="tipo"
+            value={form.tipo}
+            onChange={handleChange}
+            options={TIPOS}
             required
           />
           <FormSelect

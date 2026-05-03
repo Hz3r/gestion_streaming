@@ -13,6 +13,7 @@ interface Contratos {
     precio_total: number;
     estado_pagado: boolean;
     detalles?: ContratoDetalle[]; // Lista de cuentas (V1.5)
+    tipo_contrato?: string;
 }
 
 export default Contratos;

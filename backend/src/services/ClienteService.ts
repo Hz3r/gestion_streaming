@@ -9,7 +9,8 @@ class ClienteService {
             id_cliente: id,
             nombre: cliente.nombre,
             telefono: cliente.telefono,
-            estado: cliente.estado
+            estado: cliente.estado,
+            tipo: cliente.tipo
         };
     }
 
@@ -19,7 +20,8 @@ class ClienteService {
             id_cliente: c.id_cliente!,
             nombre: c.nombre,
             telefono: c.telefono,
-            estado: c.estado
+            estado: c.estado,
+            tipo: c.tipo
         }));
     }
 
@@ -32,7 +34,8 @@ class ClienteService {
             id_cliente: cliente.id_cliente!,
             nombre: cliente.nombre,
             telefono: cliente.telefono,
-            estado: cliente.estado
+            estado: cliente.estado,
+            tipo: cliente.tipo
         };
     }
 
@@ -46,7 +49,8 @@ class ClienteService {
             id_cliente: id,
             nombre: cliente.nombre,
             telefono: cliente.telefono,
-            estado: cliente.estado
+            estado: cliente.estado,
+            tipo: cliente.tipo
         };
     }
 

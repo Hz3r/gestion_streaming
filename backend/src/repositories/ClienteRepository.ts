@@ -3,8 +3,10 @@ import Cliente from "../models/Cliente";
 
 class ClienteRepository {
     async crear(cliente: Cliente): Promise<number> {
-        const sql = 'INSERT INTO clientes (nombre, telefono, estado) VALUES (?, ?, ?)';
-        const [result]: any = await pool.execute(sql, [cliente.nombre, cliente.telefono, cliente.estado]);
+        const sql = 'INSERT INTO clientes (nombre, telefono, estado, tipo) VALUES (?,?,?,?)';
+        const [result]: any = await pool.execute(sql, [
+            cliente.nombre, cliente.telefono, cliente.estado, cliente.tipo || 'Directo'
+        ]);
         return result.insertId;
     }
 
@@ -21,8 +23,10 @@ class ClienteRepository {
     }
 
     async actualizar(id: number, cliente: Cliente): Promise<number> {
-        const sql = 'UPDATE clientes SET nombre = ?, telefono = ?, estado = ? WHERE id_cliente = ?';
-        const [result]: any = await pool.execute(sql, [cliente.nombre, cliente.telefono, cliente.estado, id]);
+        const sql = 'UPDATE clientes SET nombre = ?, telefono = ?, estado = ?, tipo = ? WHERE id_cliente = ?';
+        const [result]: any = await pool.execute(sql, [
+            cliente.nombre, cliente.telefono, cliente.estado, cliente.tipo || 'Directo', id
+        ]);
         return result.affectedRows;
     }
 

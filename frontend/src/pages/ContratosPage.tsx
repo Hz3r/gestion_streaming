@@ -7,7 +7,7 @@ import FormSelect from "../components/common/FormSelect";
 import FormCombobox from "../components/common/FormCombobox";
 import ConfirmDialog from "../components/common/ConfirmDialog";
 import * as XLSX from "xlsx";
-import { Download, Calendar, FileText, Save, Plus, Trash2 } from "lucide-react";
+import { Download, Calendar, FileText, Save, Plus, Trash2, Filter } from "lucide-react";
 import { 
   getContratos, createContrato, updateContrato, deleteContrato,
   getClientes, getCuentas, getMetodosPago 
@@ -24,18 +24,20 @@ type Contrato = {
   id_contrato: number;
   id_cliente: number;
   cliente: string;
-  cuentas: CuentaDetalle[] | string; // Dependiendo de cómo lo pase JSON_ARRAYAGG
+  cuentas: CuentaDetalle[] | string;
   id_metodo: number;
   metodo_pago: string;
   fecha_inicio: string;
   fecha_vencimiento: string;
   precio_unitario: number;
   precio_total: number;
-  estado_pagado: number; // 0 o 1
+  estado_pagado: number;
+  tipo_contrato: string;
 };
 
 const INITIAL_FORM = {
   id_cliente: "", id_metodo: "", fecha_inicio: "", fecha_vencimiento: "", precio_unitario: "", estado_pagado: "0",
+  tipo_contrato: "Directo",
   detalles: [{ id_cuenta: "", perfiles_alquilados: "1" }]
 };
 
@@ -52,18 +54,27 @@ const MESES = [
 const ContratosPage = () => {
   const [data, setData] = useState<Contrato[]>([]);
   const [loading, setLoading] = useState(true);
-  const [clientes, setClientes] = useState<{value: any, label: string}[]>([]);
+  const [clientes, setClientes] = useState<{value: any, label: string, tipo: string}[]>([]);
   const [cuentas, setCuentas] = useState<{value: any, label: string, estado: string}[]>([]);
   const [metodosPago, setMetodosPago] = useState<{value: any, label: string}[]>([]);
 
   const [mesSeleccionado, setMesSeleccionado] = useState<number | "todos">("todos");
   const [anioSeleccionado, setAnioSeleccionado] = useState<number>(new Date().getFullYear());
+  
+  // Persistence for filter
+  const [filtroTipo, setFiltroTipo] = useState<string>(() => {
+    return localStorage.getItem("filtroTipoContrato") || "Todos";
+  });
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editItem, setEditItem] = useState<Contrato | null>(null);
   const [form, setForm] = useState<any>(INITIAL_FORM);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteItem, setDeleteItem] = useState<Contrato | null>(null);
+
+  useEffect(() => {
+    localStorage.setItem("filtroTipoContrato", filtroTipo);
+  }, [filtroTipo]);
 
   useEffect(() => {
     fetchInitialData();
@@ -79,7 +90,7 @@ const ContratosPage = () => {
         getMetodosPago()
       ]);
       setData(resContratos.data);
-      setClientes(resCli.data.map((c: any) => ({ value: c.id_cliente, label: c.nombre })));
+      setClientes(resCli.data.map((c: any) => ({ value: c.id_cliente, label: c.nombre, tipo: c.tipo || 'Directo' })));
       setCuentas(resCue.data.map((c: any) => ({ 
         value: c.id_cuenta, 
         label: `${c.email} — ${c.plataforma} (${c.capacidad_total - c.perfiles_en_uso} disp.)`,
@@ -94,7 +105,13 @@ const ContratosPage = () => {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value, type } = e.target;
+    if (type === "checkbox") {
+      const checked = (e.target as HTMLInputElement).checked;
+      setForm({ ...form, [name]: checked ? "Lank" : "Directo" });
+    } else {
+      setForm({ ...form, [name]: value });
+    }
   };
 
   const handleComboboxChange = (name: string, value: string | number) => {
@@ -135,6 +152,7 @@ const ContratosPage = () => {
       fecha_vencimiento: item.fecha_vencimiento.split("T")[0],
       precio_unitario: String(item.precio_unitario), 
       estado_pagado: String(item.estado_pagado),
+      tipo_contrato: item.tipo_contrato || "Directo",
       detalles: cuentasArr.map(c => ({
         id_cuenta: c.id_cuenta,
         perfiles_alquilados: String(c.perfiles_alquilados)
@@ -155,16 +173,21 @@ const ContratosPage = () => {
         return;
       }
 
-      // Sumar el total de perfiles alquilados en todos los detalles
       const totalPerfiles = form.detalles.reduce((acc: number, det: any) => acc + Number(det.perfiles_alquilados), 0);
+
+      // Si es Lank, forzamos precio a 0 y estado_pagado a 1
+      const isLank = form.tipo_contrato === "Lank";
+      const precioUnitario = isLank ? 0 : Number(form.precio_unitario);
+      const estadoPagado = isLank ? 1 : Number(form.estado_pagado);
 
       const dataToSend = {
         ...form,
         id_cliente: Number(form.id_cliente),
         id_metodo: Number(form.id_metodo),
-        precio_unitario: Number(form.precio_unitario),
-        precio_total: totalPerfiles * Number(form.precio_unitario),
-        estado_pagado: Number(form.estado_pagado),
+        precio_unitario: precioUnitario,
+        precio_total: totalPerfiles * precioUnitario,
+        estado_pagado: estadoPagado,
+        tipo_contrato: form.tipo_contrato,
         detalles: form.detalles.map((d: any) => ({
           id_cuenta: Number(d.id_cuenta),
           perfiles_alquilados: Number(d.perfiles_alquilados)
@@ -196,12 +219,21 @@ const ContratosPage = () => {
   };
 
   const datosFiltrados = useMemo(() => {
-    if (mesSeleccionado === "todos") return data;
-    return data.filter((c) => {
-      const fecha = new Date(c.fecha_inicio);
-      return fecha.getMonth() === mesSeleccionado && fecha.getFullYear() === anioSeleccionado;
-    });
-  }, [data, mesSeleccionado, anioSeleccionado]);
+    let filtrado = data;
+    
+    if (filtroTipo !== "Todos") {
+      filtrado = filtrado.filter(c => (c.tipo_contrato || "Directo") === filtroTipo);
+    }
+
+    if (mesSeleccionado !== "todos") {
+      filtrado = filtrado.filter((c) => {
+        const fecha = new Date(c.fecha_inicio);
+        return fecha.getMonth() === mesSeleccionado && fecha.getFullYear() === anioSeleccionado;
+      });
+    }
+
+    return filtrado;
+  }, [data, mesSeleccionado, anioSeleccionado, filtroTipo]);
 
   const metricas = useMemo(() => {
     const totalContratos = datosFiltrados.length;
@@ -209,7 +241,6 @@ const ContratosPage = () => {
     const pagados = datosFiltrados.filter((c) => Number(c.estado_pagado) === 1).length;
     const pendientes = datosFiltrados.filter((c) => Number(c.estado_pagado) === 0).length;
     
-    // Sumar perfiles de todas las cuentas dentro de todos los contratos filtrados
     let totalPerfiles = 0;
     datosFiltrados.forEach(c => {
       const arr = parseCuentas(c.cuentas);
@@ -225,6 +256,15 @@ const ContratosPage = () => {
     () => [
       { accessorKey: "id_contrato", header: "ID", size: 60 },
       { accessorKey: "cliente", header: "Cliente", size: 150 },
+      {
+        accessorKey: "tipo_contrato",
+        header: "Tipo",
+        size: 90,
+        Cell: ({ cell }) => {
+          const val = cell.getValue<string>() || "Directo";
+          return <span className={val === "Lank" ? "badge badge--info" : "badge badge--warning"}>{val}</span>;
+        }
+      },
       { 
         accessorKey: "cuentas", 
         header: "Cuentas Incluidas", 
@@ -286,6 +326,7 @@ const ContratosPage = () => {
       return {
         "ID": c.id_contrato, 
         "Cliente": c.cliente, 
+        "Tipo": c.tipo_contrato || "Directo",
         "Plataformas": plataformas,
         "Cuentas": correos,
         "Total Perfiles": totalPerf,
@@ -316,7 +357,19 @@ const ContratosPage = () => {
       <div className="contratos-page">
         <div className="contratos-page__header">
           <div className="period-filter">
-            <Calendar size={18} className="period-filter__icon" />
+            <Filter size={18} className="period-filter__icon" />
+            <select
+              className="period-filter__select"
+              value={filtroTipo}
+              onChange={(e) => setFiltroTipo(e.target.value)}
+              style={{ fontWeight: 600, color: filtroTipo === "Lank" ? "#3b82f6" : "#475569" }}
+            >
+              <option value="Todos">Todos los Contratos</option>
+              <option value="Directo">Contratos Directos</option>
+              <option value="Lank">Contratos Lank</option>
+            </select>
+
+            <Calendar size={18} className="period-filter__icon" style={{ marginLeft: '10px' }} />
             <select
               className="period-filter__select"
               value={anioSeleccionado}
@@ -395,13 +448,40 @@ const ContratosPage = () => {
           </div>
         }
       >
+        <div style={{ background: '#f8fafc', padding: '10px 15px', borderRadius: '8px', marginBottom: '20px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <h4 style={{ margin: 0, color: '#1e293b' }}>Modo Lank Farm</h4>
+            <p style={{ margin: '2px 0 0', fontSize: '0.8rem', color: '#64748b' }}>Activa esto si el contrato pertenece a la Granja de Lank (Precio S/ 0, Pago Automático).</p>
+          </div>
+          <label className="switch" style={{ position: 'relative', display: 'inline-block', width: '50px', height: '24px' }}>
+            <input 
+              type="checkbox" 
+              name="tipo_contrato" 
+              checked={form.tipo_contrato === "Lank"} 
+              onChange={handleChange} 
+              style={{ opacity: 0, width: 0, height: 0 }} 
+            />
+            <span className="slider round" style={{ 
+              position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, 
+              backgroundColor: form.tipo_contrato === "Lank" ? '#3b82f6' : '#ccc', 
+              transition: '.4s', borderRadius: '24px' 
+            }}>
+              <span style={{
+                position: 'absolute', content: '""', height: '16px', width: '16px', left: '4px', bottom: '4px',
+                backgroundColor: 'white', transition: '.4s', borderRadius: '50%',
+                transform: form.tipo_contrato === "Lank" ? 'translateX(26px)' : 'translateX(0)'
+              }}></span>
+            </span>
+          </label>
+        </div>
+
         <div className="form-grid">
           <FormCombobox
             label="Cliente"
             name="id_cliente"
             value={form.id_cliente}
             onChange={handleComboboxChange}
-            options={clientes}
+            options={clientes.filter(c => c.tipo === form.tipo_contrato)}
             placeholder="Buscar cliente..."
             searchPlaceholder="Escribe el nombre del cliente..."
             required
@@ -431,28 +511,32 @@ const ContratosPage = () => {
             onChange={handleChange}
             required
           />
-          <FormInput
-            label="Precio por perfil (S/)"
-            name="precio_unitario"
-            type="number"
-            value={form.precio_unitario}
-            onChange={handleChange}
-            step={0.50}
-            min={0}
-            placeholder="0.00"
-            required
-          />
-          <FormSelect
-            label="Estado de pago"
-            name="estado_pagado"
-            value={form.estado_pagado}
-            onChange={handleChange}
-            options={ESTADO_PAGO_OPT}
-            required
-          />
+          
+          {form.tipo_contrato !== "Lank" && (
+            <>
+              <FormInput
+                label="Precio por perfil (S/)"
+                name="precio_unitario"
+                type="number"
+                value={form.precio_unitario}
+                onChange={handleChange}
+                step={0.50}
+                min={0}
+                placeholder="0.00"
+                required
+              />
+              <FormSelect
+                label="Estado de pago"
+                name="estado_pagado"
+                value={form.estado_pagado}
+                onChange={handleChange}
+                options={ESTADO_PAGO_OPT}
+                required
+              />
+            </>
+          )}
         </div>
 
-        {/* Cuentas vinculadas al contrato */}
         <div style={{ marginTop: '20px', borderTop: '1px solid #e2e8f0', paddingTop: '15px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
             <h4 style={{ margin: 0, color: '#1e293b', fontSize: '1rem' }}>Cuentas del Contrato</h4>

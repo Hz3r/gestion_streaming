@@ -3,6 +3,7 @@ interface ClienteDTO {
     nombre: string;
     telefono: string;
     estado: string;
+    tipo?: string;
 }
 
 export default ClienteDTO;

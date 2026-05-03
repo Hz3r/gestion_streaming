@@ -14,6 +14,9 @@ type Cuenta = {
   plataforma: string;
   estado: string;
   perfiles_en_uso: number;
+  fecha_compra?: string;
+  fecha_expiracion?: string;
+  fecha_cancelacion_requerida?: string;
 };
 
 const CuentasRotativasPage = () => {
@@ -38,7 +41,6 @@ const CuentasRotativasPage = () => {
     setLoading(true);
     try {
       const res = await getCuentas();
-      // Solo mostramos cuentas que podrían ser rotativas (o todas para elegir)
       setData(res.data);
     } catch (error) {
       console.error(error);
@@ -79,16 +81,16 @@ const CuentasRotativasPage = () => {
 
   const handleSave = async () => {
     try {
-      // 1. Actualizar email/pass en la tabla cuentas (esto disparará el historial en el backend)
       if (editItem && (editItem.email !== form.email || editItem.contraseña !== form.contraseña)) {
         await updateCuenta(editItem.id_cuenta, {
-          ...editItem, // mandamos el resto igual
+          ...editItem,
+          fecha_compra: editItem.fecha_compra ? editItem.fecha_compra.split("T")[0] : null,
+          fecha_expiracion: editItem.fecha_expiracion ? editItem.fecha_expiracion.split("T")[0] : null,
           email: form.email,
           contraseña: form.contraseña
         });
       }
 
-      // 2. Actualizar o crear metadata rotativa
       if (form.fecha_cancelacion_requerida) {
         const payload = {
           id_cuenta_fija: editItem?.id_cuenta,
@@ -121,6 +123,28 @@ const CuentasRotativasPage = () => {
       Cell: ({ cell }) => (
         <span className="badge badge--info"><Users size={14} style={{marginRight:4}} /> {cell.getValue<number>()} clientes</span>
       )
+    },
+    {
+      accessorKey: "fecha_cancelacion_requerida",
+      header: "Alerta de Cobro",
+      size: 160,
+      Cell: ({ cell }) => {
+        const val = cell.getValue<string>();
+        if (!val) return <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Sin fecha límite</span>;
+        
+        const fecha = parseISO(val);
+        const diffHoras = differenceInHours(fecha, new Date());
+        
+        if (diffHoras < 0) {
+          return <span className="badge badge--error"><AlertTriangle size={14} style={{marginRight:4}} /> Vencido</span>;
+        } else if (diffHoras <= 24) {
+          return <span className="badge badge--error"><AlertTriangle size={14} style={{marginRight:4}} /> ¡Menos de 24h!</span>;
+        } else if (diffHoras <= 72) {
+          return <span className="badge badge--warning"><AlertTriangle size={14} style={{marginRight:4}} /> Faltan {Math.ceil(diffHoras / 24)} d</span>;
+        } else {
+          return <span className="badge badge--success">En {Math.ceil(diffHoras / 24)} d</span>;
+        }
+      }
     },
     {
       id: "acciones_rotativas",
