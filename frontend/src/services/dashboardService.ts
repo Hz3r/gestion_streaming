@@ -63,3 +63,15 @@ export const updateConfiguracion = (data: any) => api.put("/configuracion", data
 export const getNotificaciones = (id_usuario: number) => api.get(`/notificaciones/usuario/${id_usuario}`);
 export const marcarNotificacionLeida = (id: number) => api.put(`/notificaciones/${id}/leer`);
 export const marcarTodasLeidas = (id_usuario: number) => api.put(`/notificaciones/usuario/${id_usuario}/leer-todas`);
+
+// ─── LANK GRANJA ───
+export const getLankCuentas = () => api.get("/lank");
+export const createLankCuenta = (data: any) => api.post("/lank", data);
+export const updateLankCuenta = (id: number, data: any) => api.put(`/lank/${id}`, data);
+export const deleteLankCuenta = (id: number) => api.delete(`/lank/${id}`);
+
+// ─── CUENTAS ROTATIVAS & HISTORIAL ───
+export const getRotativaPorCuenta = (id_cuenta: number) => api.get(`/rotativas/cuenta/${id_cuenta}`);
+export const createRotativa = (data: any) => api.post("/rotativas", data);
+export const updateRotativa = (id: number, data: any) => api.put(`/rotativas/${id}`, data);
+export const getHistorialCredenciales = (id_cuenta: number) => api.get(`/rotativas/historial/${id_cuenta}`);

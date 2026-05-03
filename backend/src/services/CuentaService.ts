@@ -59,6 +59,18 @@ class CuentaService {
         const existe = await CuentaRepository.obtenerPorId(id);
         if (!existe) throw new Error('Cuenta no encontrada');
 
+        // Sincronización de Historial de Credenciales (Módulo Cuentas Rotativas)
+        if (existe.email !== cuentas.email || existe.contraseña !== cuentas.contraseña) {
+            const HistorialRepository = require('../repositories/HistorialCredencialesRepository').default;
+            await HistorialRepository.crear({
+                id_cuenta: id,
+                email_anterior: existe.email,
+                email_nuevo: cuentas.email,
+                pass_anterior: existe.contraseña,
+                pass_nuevo: cuentas.contraseña
+            });
+        }
+
         // La sincronización de egresos (Inversión, Caída/Recuperación) 
         // se maneja ahora mediante el TRIGGER tg_sincronizar_finanzas_update
         await CuentaRepository.actualizar(id, cuentas);

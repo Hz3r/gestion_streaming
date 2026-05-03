@@ -1,6 +1,6 @@
 import React from "react"
 import NavLink from "../atom/NavLink"
-import { Home, Users, Tv, CreditCard, Truck, UserCheck, FileText, BarChart3, Shield, User, Settings } from "lucide-react"
+import { Home, Users, Tv, CreditCard, Truck, UserCheck, FileText, BarChart3, Shield, User, Settings, Server, RefreshCw } from "lucide-react"
 
 const MENU_ITEMS = [
     { label: "Dashboard", href: "/", icon: Home },
@@ -11,6 +11,8 @@ const MENU_ITEMS = [
     { label: "Clientes", href: "/clientes", icon: UserCheck },
     { label: "Contratos", href: "/contratos", icon: FileText },
     { label: "Finanzas", href: "/finanzas", icon: BarChart3 },
+    { label: "Granja Lank", href: "/lank-farm", icon: Server },
+    { label: "Rotativas", href: "/cuentas-rotativas", icon: RefreshCw },
     { label: "Roles", href: "/roles", icon: Shield },
     { label: "Usuarios", href: "/usuarios", icon: User },
 ]

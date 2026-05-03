@@ -14,6 +14,9 @@ import UsuariosPage from "./pages/UsuariosPage";
 import ConfiguracionPage from "./pages/ConfiguracionPage";
 import PerfilPage from "./pages/PerfilPage";
 
+import LankCuentasPage from "./pages/LankCuentasPage";
+import CuentasRotativasPage from "./pages/CuentasRotativasPage";
+
 function App() {
   return (
     <Routes>
@@ -26,6 +29,8 @@ function App() {
         <Route path="/clientes" element={<ClientesPage />} />
         <Route path="/contratos" element={<ContratosPage />} />
         <Route path="/finanzas" element={<FinanzasPage />} />
+        <Route path="/lank-farm" element={<LankCuentasPage />} />
+        <Route path="/cuentas-rotativas" element={<CuentasRotativasPage />} />
         <Route path="/roles" element={<RolesPage />} />
         <Route path="/usuarios" element={<UsuariosPage />} />
         <Route path="/configuracion" element={<ConfiguracionPage />} />
