@@ -27,5 +27,8 @@ router.put('/perfil/:id', UsuarioController.actualizarPerfil);
 // PUT /api/usuarios/password/:id - Actualizar contraseña
 router.put('/password/:id', UsuarioController.actualizarPassword);
 
+// GET /api/usuarios/stats/:id - Obtener estadísticas
+router.get('/stats/:id', UsuarioController.obtenerEstadisticas);
+
 export default router;
 

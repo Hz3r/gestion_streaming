@@ -6,7 +6,8 @@ class FinanzasController {
     // GET /api/finanzas/resumen — Resumen general de todos los meses
     async obtenerResumenGeneral(req: Request, res: Response) {
         try {
-            const resumen = await FinanzasService.obtenerResumenGeneral();
+            const tipo = req.query.tipo as string;
+            const resumen = await FinanzasService.obtenerResumenGeneral(tipo);
             res.status(200).json(resumen);
         } catch (error: any) {
             res.status(500).json({ message: error.message });
@@ -17,7 +18,8 @@ class FinanzasController {
     async obtenerResumenAnual(req: Request, res: Response) {
         try {
             const anio = parseInt(req.params.anio as string);
-            const resumen = await FinanzasService.obtenerResumenAnual(anio);
+            const tipo = req.query.tipo as string;
+            const resumen = await FinanzasService.obtenerResumenAnual(anio, tipo);
             res.status(200).json(resumen);
         } catch (error: any) {
             res.status(400).json({ message: error.message });
@@ -29,7 +31,8 @@ class FinanzasController {
         try {
             const mes = parseInt(req.params.mes as string);
             const anio = parseInt(req.params.anio as string);
-            const resumen = await FinanzasService.obtenerResumenMensual(mes, anio);
+            const tipo = req.query.tipo as string;
+            const resumen = await FinanzasService.obtenerResumenMensual(mes, anio, tipo);
             res.status(200).json(resumen);
         } catch (error: any) {
             res.status(400).json({ message: error.message });
@@ -41,7 +44,8 @@ class FinanzasController {
         try {
             const mes = parseInt(req.params.mes as string);
             const anio = parseInt(req.params.anio as string);
-            const pendientes = await FinanzasService.obtenerPendientesMensual(mes, anio);
+            const tipo = req.query.tipo as string;
+            const pendientes = await FinanzasService.obtenerPendientesMensual(mes, anio, tipo);
             res.status(200).json(pendientes);
         } catch (error: any) {
             res.status(400).json({ message: error.message });

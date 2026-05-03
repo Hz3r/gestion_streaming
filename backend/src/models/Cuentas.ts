@@ -12,6 +12,7 @@ interface Cuentas {
     // Nuevos campos
     costo_total: number;
     meses_duracion: number;
+    es_lank?: boolean;
 }
 
 export default Cuentas;

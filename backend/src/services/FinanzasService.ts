@@ -5,12 +5,12 @@ import EgresoRepository from "../repositories/EgresoRepository";
 class FinanzasService {
 
     // Resumen general de todos los meses disponibles
-    async obtenerResumenGeneral(): Promise<FinanzasResumenDTO[]> {
-        return await FinanzasRepository.obtenerResumenGeneral();
+    async obtenerResumenGeneral(tipo?: string): Promise<FinanzasResumenDTO[]> {
+        return await FinanzasRepository.obtenerResumenGeneral(tipo);
     }
 
     // Resumen de un mes/año específico
-    async obtenerResumenMensual(mes: number, anio: number): Promise<FinanzasResumenDTO> {
+    async obtenerResumenMensual(mes: number, anio: number, tipo?: string): Promise<FinanzasResumenDTO> {
         if (mes < 1 || mes > 12) {
             throw new Error('El mes debe estar entre 1 y 12');
         }
@@ -18,7 +18,7 @@ class FinanzasService {
             throw new Error('Año inválido');
         }
 
-        const resumen = await FinanzasRepository.obtenerResumenMensual(mes, anio);
+        const resumen = await FinanzasRepository.obtenerResumenMensual(mes, anio, tipo);
         if (!resumen) {
             // Si no hay datos, retornar ceros
             return {
@@ -36,19 +36,19 @@ class FinanzasService {
     }
 
     // Resumen anual (todos los meses de un año)
-    async obtenerResumenAnual(anio: number): Promise<FinanzasResumenDTO[]> {
+    async obtenerResumenAnual(anio: number, tipo?: string): Promise<FinanzasResumenDTO[]> {
         if (anio < 2000 || anio > 2100) {
             throw new Error('Año inválido');
         }
-        return await FinanzasRepository.obtenerResumenAnual(anio);
+        return await FinanzasRepository.obtenerResumenAnual(anio, tipo);
     }
 
     // Detalle de contratos pendientes de un mes
-    async obtenerPendientesMensual(mes: number, anio: number): Promise<FinanzasPendienteDTO[]> {
+    async obtenerPendientesMensual(mes: number, anio: number, tipo?: string): Promise<FinanzasPendienteDTO[]> {
         if (mes < 1 || mes > 12) {
             throw new Error('El mes debe estar entre 1 y 12');
         }
-        return await FinanzasRepository.obtenerPendientesMensual(mes, anio);
+        return await FinanzasRepository.obtenerPendientesMensual(mes, anio, tipo);
     }
 
     // CERRAR MES: Registrar pago de staff

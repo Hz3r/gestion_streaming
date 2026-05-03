@@ -14,6 +14,7 @@ interface Contratos {
     estado_pagado: boolean;
     detalles?: ContratoDetalle[]; // Lista de cuentas (V1.5)
     tipo_contrato?: string;
+    id_usuario?: number;
 }
 
 export default Contratos;

@@ -51,6 +51,26 @@ class LankController {
         }
     }
 
+    async cerrarMes(req: Request, res: Response) {
+        try {
+            const { mes, anio } = req.body;
+            await LankService.cerrarMes(Number(mes), Number(anio));
+            res.status(201).json({ message: 'Mes cerrado con éxito para Lank' });
+        } catch (error: any) {
+            res.status(400).json({ message: error.message });
+        }
+    }
+
+    async eliminarCierreMes(req: Request, res: Response) {
+        try {
+            const { mes, anio } = req.body;
+            await LankService.eliminarCierreMes(Number(mes), Number(anio));
+            res.status(200).json({ message: 'Cierre de mes eliminado' });
+        } catch (error: any) {
+            res.status(400).json({ message: error.message });
+        }
+    }
+
     async syncFromN8n(req: Request, res: Response) {
         try {
             const result = await LankService.syncFromN8n(req.body);

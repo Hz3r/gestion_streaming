@@ -10,6 +10,12 @@ class NotificacionRepository {
     }
 
     async crear(datos: CrearNotificacionDTO): Promise<number> {
+        // Verificar si ya existe una notificación idéntica para este usuario hoy
+        const checkSql = 'SELECT id_notificacion FROM notificaciones WHERE id_usuario = ? AND titulo = ? AND mensaje = ? AND DATE(fecha_creacion) = CURDATE() LIMIT 1';
+        const [existing]: any = await pool.execute(checkSql, [datos.id_usuario, datos.titulo, datos.mensaje]);
+        
+        if (existing.length > 0) return 0; // No duplicar
+
         const sql = 'INSERT INTO notificaciones (id_usuario, titulo, mensaje, tipo, link) VALUES (?, ?, ?, ?, ?)';
         const [result]: any = await pool.execute(sql, [datos.id_usuario, datos.titulo, datos.mensaje, datos.tipo, datos.link || null]);
         return result.insertId;
@@ -22,6 +28,16 @@ class NotificacionRepository {
 
     async marcarTodasComoLeidas(id_usuario: number): Promise<void> {
         const sql = 'UPDATE notificaciones SET leida = TRUE WHERE id_usuario = ?';
+        await pool.execute(sql, [id_usuario]);
+    }
+
+    async eliminar(id_notificacion: number): Promise<void> {
+        const sql = 'DELETE FROM notificaciones WHERE id_notificacion = ?';
+        await pool.execute(sql, [id_notificacion]);
+    }
+
+    async eliminarTodasPorUsuario(id_usuario: number): Promise<void> {
+        const sql = 'DELETE FROM notificaciones WHERE id_usuario = ?';
         await pool.execute(sql, [id_usuario]);
     }
 

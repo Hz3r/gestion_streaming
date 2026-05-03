@@ -1,4 +1,5 @@
 import CuentasService from "../services/CuentaService";
+import NotificacionService from "../services/NotificacionService";
 import { Request, Response } from "express";
 
 class CuentasController {
@@ -7,6 +8,10 @@ class CuentasController {
         try {
             const datos = req.body;
             const resultado = await CuentasService.crearCuenta(datos);
+            
+            // Disparar escaneo de notificaciones
+            NotificacionService.generarNotificacionesVencimiento().catch(console.error);
+
             res.status(201).json({
                 message: 'Cuenta creada con éxito',
                 data: resultado
@@ -40,6 +45,10 @@ class CuentasController {
             const id = parseInt(req.params.id as string);
             const datos = req.body;
             const resultado = await CuentasService.actualizarCuenta(id, datos);
+
+            // Disparar escaneo de notificaciones
+            NotificacionService.generarNotificacionesVencimiento().catch(console.error);
+
             res.status(200).json({
                 message: 'Cuenta actualizada con éxito',
                 data: resultado

@@ -25,6 +25,25 @@ class LankService {
         return await LankRepository.eliminar(id);
     }
 
+    async cerrarMes(mes: number, anio: number): Promise<void> {
+        // Obtenemos la suma cobrado y proyectado (94.40 si bono_activo = 1)
+        const sql = `
+            SELECT 
+                SUM(CASE WHEN pagado = 1 THEN monto_farming + IF(bono_activo = 1, 94.40, 0) ELSE 0 END) as cobrado,
+                SUM(monto_farming + IF(bono_activo = 1, 94.40, 0)) as proyectado 
+            FROM lank_cuentas_madre
+        `;
+        const [rows]: any = await pool.execute(sql);
+        const cobrado = rows[0].cobrado || 0;
+        const proyectado = rows[0].proyectado || 0;
+
+        await LankRepository.cerrarMes(mes, anio, cobrado, proyectado);
+    }
+
+    async eliminarCierreMes(mes: number, anio: number): Promise<number> {
+        return await LankRepository.eliminarCierreMes(mes, anio);
+    }
+
     // Endpoint de Sincronización para n8n
     async syncFromN8n(payload: any): Promise<any> {
         const { id_lank_madre, correo, plataformas_activas, monto_farming, bono_activo, nuevos_clientes } = payload;

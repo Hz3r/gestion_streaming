@@ -12,7 +12,12 @@ class UsuarioRepository{
     }
 
     async buscarPorEmail(email:string): Promise<Usuario | null> {
-        const sql = 'SELECT * FROM usuarios WHERE email = ?';
+        const sql = `
+            SELECT u.*, r.permisos 
+            FROM usuarios u
+            INNER JOIN roles r ON u.id_rol = r.id_rol
+            WHERE u.email = ?
+        `;
         const [rows] : any = await pool.execute(sql, [email]);
         if (rows.length === 0) return null;
         return rows[0] as Usuario;
@@ -49,17 +54,32 @@ class UsuarioRepository{
     }
 
     async obtenerTodos():Promise<Usuario[]>{
-        const sql = 'SELECT * FROM usuarios';
+        const sql = `
+            SELECT u.*, r.permisos 
+            FROM usuarios u
+            INNER JOIN roles r ON u.id_rol = r.id_rol
+        `;
         const [rows] : any = await pool.execute(sql);
         return rows as Usuario[];
     }
 
 
-    async obtenerPorId(id:number):Promise<Usuario | null>{
-        const sql = 'SELECT * FROM usuarios WHERE id_usuario = ?';
+    async obtenerPorId(id: number): Promise<Usuario | null> {
+        const sql = `
+            SELECT u.*, r.nombre as rol 
+            FROM usuarios u
+            INNER JOIN roles r ON u.id_rol = r.id_rol
+            WHERE u.id_usuario = ?
+        `;
         const [rows] : any = await pool.execute(sql, [id]);
         if (rows.length === 0) return null;
         return rows[0] as Usuario;
+    }
+
+    async obtenerEstadisticas(id: number): Promise<{ total_contratos: number }> {
+        const sql = 'SELECT COUNT(*) as total FROM contratos WHERE id_usuario = ?';
+        const [rows]: any = await pool.execute(sql, [id]);
+        return { total_contratos: rows[0].total || 0 };
     }
 
 

@@ -14,6 +14,7 @@ interface CuentasDTO {
     // Nuevos campos financieros
     costo_total: number;
     meses_duracion: number;
+    es_lank?: boolean;
 }
 
 export default CuentasDTO;

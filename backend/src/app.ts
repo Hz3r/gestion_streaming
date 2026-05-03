@@ -21,6 +21,7 @@ import egresoRoutes from './routes/EgresoRoutes';
 import lankRoutes from './routes/LankRoutes';
 import rotativasRoutes from './routes/RotativasRoutes';
 import authRoutes from './routes/AuthRoutes';
+import searchRoutes from './routes/SearchRoutes';
 import { authMiddleware } from './middlewares/authMiddleware';
 
 const app = express();
@@ -34,8 +35,8 @@ app.use(compression());
 app.use(cookieParser());
 
 // Parseo de JSON y formularios
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Rutas
 app.use('/api/auth', authRoutes);
@@ -57,6 +58,7 @@ app.use('/api/notificaciones', notificacionRoutes);
 app.use('/api/egresos', egresoRoutes);
 app.use('/api/lank', lankRoutes);
 app.use('/api/rotativas', rotativasRoutes);
+app.use('/api/search', searchRoutes);
 
 // Ruta de salud
 app.get('/api/health', (req, res) => {

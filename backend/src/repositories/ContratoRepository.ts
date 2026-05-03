@@ -12,8 +12,8 @@ class ContratoRepository{
             // Insertar Maestro
             const sql = `INSERT INTO contratos(
                 id_cliente, id_metodo, fecha_inicio, fecha_vencimiento, 
-                precio_unitario, precio_total, estado_pagado, tipo_contrato
-            ) VALUES (?,?,?,?,?,?,?,?)`;
+                precio_unitario, precio_total, estado_pagado, tipo_contrato, id_usuario
+            ) VALUES (?,?,?,?,?,?,?,?,?)`;
             
             const [result]:any = await connection.execute(sql,[
                 contrato.id_cliente ?? null, 
@@ -23,7 +23,8 @@ class ContratoRepository{
                 contrato.precio_unitario ?? 0, 
                 contrato.precio_total ?? 0, 
                 contrato.estado_pagado ?? 0,
-                contrato.tipo_contrato || 'Directo'
+                contrato.tipo_contrato || 'Directo',
+                contrato.id_usuario ?? null
             ]);
             
             const id_contrato = result.insertId;
@@ -197,6 +198,17 @@ class ContratoRepository{
         const sql = 'DELETE FROM contratos WHERE id_contrato = ?';
         const [result]:any = await pool.execute(sql,[id ?? null]);
         return result.affectedRows;
+    }
+
+    async obtenerProximosAVencer(dias: number): Promise<any[]> {
+        const sql = `
+            SELECT c.*, cl.nombre as nombre_cliente 
+            FROM contratos c
+            INNER JOIN clientes cl ON c.id_cliente = cl.id_cliente
+            WHERE c.fecha_vencimiento BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL ? DAY)
+        `;
+        const [rows]: any = await pool.execute(sql, [dias]);
+        return rows;
     }
 }
 

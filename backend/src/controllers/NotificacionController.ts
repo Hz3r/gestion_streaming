@@ -32,6 +32,26 @@ class NotificacionController {
         }
     }
 
+    async eliminar(req: Request, res: Response) {
+        try {
+            const id = parseInt(req.params.id as string);
+            await NotificacionService.eliminar(id);
+            res.json({ message: "Notificación eliminada" });
+        } catch (error: any) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+
+    async eliminarTodas(req: Request, res: Response) {
+        try {
+            const id_usuario = parseInt(req.params.id_usuario as string);
+            await NotificacionService.eliminarTodas(id_usuario);
+            res.json({ message: "Todas las notificaciones eliminadas" });
+        } catch (error: any) {
+            res.status(500).json({ error: error.message });
+        }
+    }
+
     async crear(req: Request, res: Response) {
         try {
             const id = await NotificacionService.crearNotificacion(req.body);

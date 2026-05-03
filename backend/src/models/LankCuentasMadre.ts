@@ -11,5 +11,6 @@ export default interface LankCuentasMadre {
     estado_baneo?: 'Limpio' | 'Baneado';
     fecha_desbaneo?: string;
     plataformas_activas?: string; // JSON string
+    pagado?: boolean;
     fecha_creacion?: string;
 }

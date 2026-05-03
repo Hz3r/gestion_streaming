@@ -97,6 +97,10 @@ class UsuarioService{
         return await UsuarioRepository.obtenerPorId(id);
     }
 
+    async obtenerEstadisticas(id:number): Promise<{ total_contratos: number }> {
+        return await UsuarioRepository.obtenerEstadisticas(id);
+    }
+
 
 
 

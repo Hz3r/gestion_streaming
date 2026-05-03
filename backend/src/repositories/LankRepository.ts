@@ -6,8 +6,8 @@ class LankRepository {
         const sql = `INSERT INTO lank_cuentas_madre (
             correo, password, metodo_acceso, numero_vinculado, verificado, 
             yape_numero, monto_farming, bono_activo, estado_baneo, 
-            fecha_desbaneo, plataformas_activas
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?)`;
+            fecha_desbaneo, plataformas_activas, pagado
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`;
         
         const plataformasJson = lank.plataformas_activas ? JSON.stringify(lank.plataformas_activas) : null;
         
@@ -16,7 +16,8 @@ class LankRepository {
             lank.numero_vinculado ?? null, lank.verificado ? 1 : 0,
             lank.yape_numero ?? null, lank.monto_farming ?? 0.00, 
             lank.bono_activo ? 1 : 0, lank.estado_baneo ?? 'Limpio',
-            lank.fecha_desbaneo ?? null, plataformasJson
+            lank.fecha_desbaneo ?? null, plataformasJson,
+            lank.pagado ? 1 : 0
         ]);
         return result.insertId;
     }
@@ -57,6 +58,7 @@ class LankRepository {
             fields.push('plataformas_activas = ?'); 
             values.push(lank.plataformas_activas ? JSON.stringify(lank.plataformas_activas) : null); 
         }
+        if (lank.pagado !== undefined) { fields.push('pagado = ?'); values.push(lank.pagado ? 1 : 0); }
 
         if (fields.length === 0) return 0;
 
@@ -70,6 +72,25 @@ class LankRepository {
     async eliminar(id: number): Promise<number> {
         const sql = 'DELETE FROM lank_cuentas_madre WHERE id_lank_madre = ?';
         const [result]: any = await pool.execute(sql, [id]);
+        return result.affectedRows;
+    }
+
+    async cerrarMes(mes: number, anio: number, cobrado: number, proyectado: number): Promise<number> {
+        const sql = `
+            INSERT INTO lank_ingresos_historico (mes, anio, monto_total, monto_cobrado, monto_proyectado) 
+            VALUES (?, ?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE 
+                monto_total = VALUES(monto_total),
+                monto_cobrado = VALUES(monto_cobrado),
+                monto_proyectado = VALUES(monto_proyectado)
+        `;
+        const [result]: any = await pool.execute(sql, [mes, anio, cobrado, cobrado, proyectado]);
+        return result.insertId;
+    }
+
+    async eliminarCierreMes(mes: number, anio: number): Promise<number> {
+        const sql = 'DELETE FROM lank_ingresos_historico WHERE mes = ? AND anio = ?';
+        const [result]: any = await pool.execute(sql, [mes, anio]);
         return result.affectedRows;
     }
 }

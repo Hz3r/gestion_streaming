@@ -1,4 +1,5 @@
 import ContratoService from "../services/ContratoService";
+import NotificacionService from "../services/NotificacionService";
 import { Request, Response } from "express";
 
 class ContratosController {
@@ -7,6 +8,10 @@ class ContratosController {
         try {
             const datos = req.body;
             const resultado = await ContratoService.crearContrato(datos);
+
+            // Disparar escaneo de notificaciones
+            NotificacionService.generarNotificacionesVencimiento().catch(console.error);
+
             res.status(201).json({
                 message: 'Contrato creado con éxito',
                 data: resultado
@@ -79,6 +84,10 @@ class ContratosController {
             const id = parseInt(req.params.id as string);
             const datos = req.body;
             const resultado = await ContratoService.actualizarContrato(id, datos);
+
+            // Disparar escaneo de notificaciones
+            NotificacionService.generarNotificacionesVencimiento().catch(console.error);
+
             res.status(200).json({
                 message: 'Contrato actualizado con éxito',
                 data: resultado

@@ -30,7 +30,9 @@ class CuentaService {
             capacidad_total: c.capacidad_total,
             perfiles_en_uso: c.perfiles_en_uso,
             costo_total: c.costo_total,
-            meses_duracion: c.meses_duracion
+            meses_duracion: c.meses_duracion,
+            es_lank: c.es_lank === 1 || c.es_lank === true,
+            fecha_cancelacion_requerida: (c as any).fecha_cancelacion_requerida
         }));
     }
 
@@ -51,7 +53,8 @@ class CuentaService {
             capacidad_total: cuenta.capacidad_total,
             perfiles_en_uso: cuenta.perfiles_en_uso,
             costo_total: cuenta.costo_total,
-            meses_duracion: cuenta.meses_duracion
+            meses_duracion: cuenta.meses_duracion,
+            es_lank: cuenta.es_lank === 1 || cuenta.es_lank === true
         };
     }
 
@@ -74,6 +77,16 @@ class CuentaService {
         // La sincronización de egresos (Inversión, Caída/Recuperación) 
         // se maneja ahora mediante el TRIGGER tg_sincronizar_finanzas_update
         await CuentaRepository.actualizar(id, cuentas);
+
+        // --- SINCRONIZACIÓN DINÁMICA CON CUENTAS ROTATIVAS ---
+        // Si la fecha de expiración cambió, actualizamos la fecha de cobro en rotativas
+        const RotativasRepository = require('../repositories/RotativasRepository').default;
+        const rotativa = await RotativasRepository.obtenerPorCuenta(id);
+        if (rotativa) {
+            await RotativasRepository.actualizar(rotativa.id_rotativa, {
+                fecha_cancelacion_requerida: cuentas.fecha_expiracion
+            });
+        }
         
         return {
             id_cuenta: id,

@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import NotificacionService from "../services/NotificacionService";
 import RotativasRepository from "../repositories/RotativasRepository";
 import HistorialCredencialesRepository from "../repositories/HistorialCredencialesRepository";
 
@@ -6,6 +7,10 @@ class RotativasController {
     async crearRotativa(req: Request, res: Response) {
         try {
             const id = await RotativasRepository.crear(req.body);
+
+            // Disparar escaneo de notificaciones
+            NotificacionService.generarNotificacionesVencimiento().catch(console.error);
+
             res.status(201).json({ message: "Configuración rotativa creada", id_rotativa: id });
         } catch (error: any) {
             res.status(400).json({ message: error.message });
@@ -14,7 +19,7 @@ class RotativasController {
 
     async obtenerPorCuenta(req: Request, res: Response) {
         try {
-            const id_cuenta = parseInt(req.params.id_cuenta);
+            const id_cuenta = parseInt(req.params.id_cuenta as string);
             const rotativa = await RotativasRepository.obtenerPorCuenta(id_cuenta);
             res.status(200).json(rotativa || {});
         } catch (error: any) {
@@ -24,8 +29,12 @@ class RotativasController {
 
     async actualizarRotativa(req: Request, res: Response) {
         try {
-            const id = parseInt(req.params.id);
+            const id = parseInt(req.params.id as string);
             await RotativasRepository.actualizar(id, req.body);
+
+            // Disparar escaneo de notificaciones
+            NotificacionService.generarNotificacionesVencimiento().catch(console.error);
+
             res.status(200).json({ message: "Configuración rotativa actualizada" });
         } catch (error: any) {
             res.status(400).json({ message: error.message });
@@ -34,7 +43,7 @@ class RotativasController {
 
     async obtenerHistorial(req: Request, res: Response) {
         try {
-            const id_cuenta = parseInt(req.params.id_cuenta);
+            const id_cuenta = parseInt(req.params.id_cuenta as string);
             const historial = await HistorialCredencialesRepository.obtenerPorCuenta(id_cuenta);
             res.status(200).json(historial);
         } catch (error: any) {

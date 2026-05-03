@@ -46,7 +46,8 @@ class AuthController {
                     nombre: usuario.nombre,
                     email: usuario.email,
                     rol: usuario.id_rol,
-                    foto: usuario.foto_perfil
+                    foto: usuario.foto_perfil,
+                    permisos: usuario.permisos
                 }
             });
         } catch (error: any) {
@@ -70,7 +71,8 @@ class AuthController {
                     nombre: usuario.nombre,
                     email: usuario.email,
                     rol: usuario.id_rol,
-                    foto: usuario.foto_perfil
+                    foto: usuario.foto_perfil,
+                    permisos: usuario.permisos
                 }
             });
         } catch (error) {

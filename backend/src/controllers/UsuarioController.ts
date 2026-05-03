@@ -113,6 +113,16 @@ class UsuarioController {
         }
     }
 
+    async obtenerEstadisticas(req: Request, res: Response) {
+        try {
+            const id = parseInt(req.params.id as string);
+            const stats = await UsuarioService.obtenerEstadisticas(id);
+            res.json(stats);
+        } catch (error: any) {
+            res.status(400).json({ message: error.message });
+        }
+    }
+
 }
 
 

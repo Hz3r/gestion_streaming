@@ -1,19 +1,20 @@
 import { Router } from "express";
 import LankController from "../controllers/LankController";
-// Asumiendo que existe un middleware de autenticación/roles
-// import authMiddleware from "../middlewares/authMiddleware";
-// import roleMiddleware from "../middlewares/roleMiddleware";
+import { checkPermission } from "../middlewares/authMiddleware";
+import { PERMISOS } from "../constants/Permisos";
 
 const router = Router();
 
-// Endpoints de Sincronización n8n (Puede requerir API Key o Auth específica)
+// Endpoints de Sincronización n8n
 router.post('/sync', LankController.syncFromN8n);
 
-// CRUD
-router.post('/', LankController.crear);
+// CRUD y Operaciones Financieras
+router.post('/cerrar-mes', checkPermission(PERMISOS.LANK_CLOSE_MONTH), LankController.cerrarMes);
+router.post('/eliminar-cierre', checkPermission(PERMISOS.LANK_DELETE_HISTORY), LankController.eliminarCierreMes);
+router.post('/', checkPermission(PERMISOS.LANK_EDIT), LankController.crear);
 router.get('/', LankController.obtenerTodas);
 router.get('/:id', LankController.obtenerPorId);
-router.put('/:id', LankController.actualizar);
-router.delete('/:id', LankController.eliminar);
+router.put('/:id', checkPermission(PERMISOS.LANK_EDIT), LankController.actualizar);
+router.delete('/:id', checkPermission(PERMISOS.CUENTAS_DELETE), LankController.eliminar);
 
 export default router;
