@@ -1,0 +1,205 @@
+/* ==========================================================================
+   LOGIN PAGE (BankDash Aesthetic)
+   ========================================================================== */
+
+   .login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f5f7fa; /* BankDash subtle gray background */
+    font-family: 'Inter', sans-serif;
+    padding: 20px;
+    background-image: 
+      radial-gradient(at 0% 0%, hsla(216,100%,73%,0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, hsla(216,100%,73%,0.15) 0px, transparent 50%);
+  }
+  
+  .login-card {
+    background: #ffffff;
+    width: 100%;
+    max-width: 440px;
+    border-radius: 20px;
+    box-shadow: 0px 10px 40px rgba(0, 0, 0, 0.04);
+    padding: 40px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Header */
+  .login-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 40px;
+  }
+  
+  .login-logo-icon {
+    font-size: 2rem;
+    background: #eef2ff;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    box-shadow: 0 4px 10px rgba(45, 96, 255, 0.1);
+  }
+  
+  .login-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #343c6a; /* BankDash Dark Blue */
+    margin: 0;
+    letter-spacing: -0.5px;
+  }
+  
+  /* Body */
+  .login-body {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .login-subtitle {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #343c6a;
+    margin: 0 0 8px 0;
+    text-align: center;
+  }
+  
+  .login-description {
+    font-size: 0.9rem;
+    color: #718ebf; /* BankDash Gray Text */
+    text-align: center;
+    margin: 0 0 30px 0;
+    line-height: 1.5;
+  }
+  
+  .login-error-alert {
+    background-color: #fee2e2;
+    color: #ef4444;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 20px;
+    text-align: center;
+    border: 1px solid #fecaca;
+  }
+  
+  /* Form Elements */
+  .login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .input-group label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #343c6a;
+  }
+  
+  .input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  
+  .input-icon {
+    position: absolute;
+    left: 16px;
+    color: #718ebf;
+  }
+  
+  .input-wrapper input {
+    width: 100%;
+    padding: 14px 16px 14px 45px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    color: #343c6a;
+    background: #f8fafc;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    font-family: inherit;
+  }
+  
+  .input-wrapper input::placeholder {
+    color: #94a3b8;
+  }
+  
+  .input-wrapper input:focus {
+    outline: none;
+    border-color: #2d60ff; /* BankDash Primary Blue */
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(45, 96, 255, 0.1);
+  }
+  
+  /* Submit Button */
+  .login-btn {
+    margin-top: 10px;
+    background-color: #2d60ff;
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(45, 96, 255, 0.2);
+  }
+  
+  .login-btn:hover:not(:disabled) {
+    background-color: #1e4bd8;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(45, 96, 255, 0.3);
+  }
+  
+  .login-btn:disabled {
+    background-color: #93c5fd;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  
+  /* Footer */
+  .login-footer {
+    margin-top: 30px;
+    text-align: center;
+  }
+  
+  .login-footer p {
+    font-size: 0.8rem;
+    color: #718ebf;
+    margin: 0;
+  }
+  
+  /* Spinner */
+  .spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #ffffff;
+    animation: spin 0.8s ease-in-out infinite;
+  }
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }

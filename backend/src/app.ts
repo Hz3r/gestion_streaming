@@ -20,6 +20,8 @@ import notificacionRoutes from './routes/notificacionRoutes';
 import egresoRoutes from './routes/EgresoRoutes';
 import lankRoutes from './routes/LankRoutes';
 import rotativasRoutes from './routes/RotativasRoutes';
+import authRoutes from './routes/AuthRoutes';
+import { authMiddleware } from './middlewares/authMiddleware';
 
 const app = express();
 
@@ -36,6 +38,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Rutas
+app.use('/api/auth', authRoutes);
+
+// Proteger todas las rutas de API con authMiddleware (excepto auth que ya lo maneja o tiene excepciones)
+app.use('/api', authMiddleware);
+
 app.use('/api/usuarios', usuarioRoutes);
 app.use('/api/roles', rolRoutes);
 app.use('/api/plataformas', plataformaRoutes);

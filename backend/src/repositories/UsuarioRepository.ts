@@ -11,6 +11,13 @@ class UsuarioRepository{
         return rows[0] as Usuario;
     }
 
+    async buscarPorEmail(email:string): Promise<Usuario | null> {
+        const sql = 'SELECT * FROM usuarios WHERE email = ?';
+        const [rows] : any = await pool.execute(sql, [email]);
+        if (rows.length === 0) return null;
+        return rows[0] as Usuario;
+    }
+
     async crear(usuario: Usuario): Promise<number> {
         const sql = 'INSERT INTO usuarios (nombre, email, contraseña, id_rol, foto_perfil) VALUES (?, ?, ?, ?, ?)';
         const [result] : any = await pool.execute(sql, [usuario.nombre, usuario.email, usuario.contraseña, usuario.id_rol, usuario.foto_perfil]);
