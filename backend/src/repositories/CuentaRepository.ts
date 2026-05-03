@@ -42,7 +42,7 @@ class CuentaRepository {
             INNER JOIN proveedores pr ON c.id_proveedor = pr.id_proveedor
             WHERE c.id_cuenta = ?
         `;
-        const [rows]: any = await pool.execute(sql, [id]);
+        const [rows]: any = await pool.execute(sql, [id ?? null]);
         return rows.length > 0 ? rows[0] : null;
     }
 
@@ -69,7 +69,7 @@ class CuentaRepository {
     // Actualizar el contador de perfiles en uso
     async actualizarPerfilesEnUso(id_cuenta: number, cantidad: number): Promise<number> {
         const sql = 'UPDATE cuentas SET perfiles_en_uso = perfiles_en_uso + ? WHERE id_cuenta = ?';
-        const [result]: any = await pool.execute(sql, [cantidad, id_cuenta]);
+        const [result]: any = await pool.execute(sql, [cantidad ?? 0, id_cuenta ?? null]);
         return result.affectedRows;
     }
 }

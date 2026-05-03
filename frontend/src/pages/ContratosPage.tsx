@@ -7,22 +7,26 @@ import FormSelect from "../components/common/FormSelect";
 import FormCombobox from "../components/common/FormCombobox";
 import ConfirmDialog from "../components/common/ConfirmDialog";
 import * as XLSX from "xlsx";
-import { Download, Calendar, FileText, Save } from "lucide-react";
+import { Download, Calendar, FileText, Save, Plus, Trash2 } from "lucide-react";
 import { 
   getContratos, createContrato, updateContrato, deleteContrato,
   getClientes, getCuentas, getMetodosPago 
 } from "../services/dashboardService";
 
+type CuentaDetalle = {
+  id_cuenta: number;
+  email: string;
+  plataforma: string;
+  perfiles_alquilados: number;
+};
+
 type Contrato = {
   id_contrato: number;
   id_cliente: number;
   cliente: string;
-  id_cuenta: number;
-  cuenta: string;
-  plataforma: string;
+  cuentas: CuentaDetalle[] | string; // Dependiendo de cómo lo pase JSON_ARRAYAGG
   id_metodo: number;
   metodo_pago: string;
-  perfiles_alquilados: number;
   fecha_inicio: string;
   fecha_vencimiento: string;
   precio_unitario: number;
@@ -31,8 +35,8 @@ type Contrato = {
 };
 
 const INITIAL_FORM = {
-  id_cliente: "", id_cuenta: "", id_metodo: "", perfiles_alquilados: "1",
-  fecha_inicio: "", fecha_vencimiento: "", precio_unitario: "", estado_pagado: "0",
+  id_cliente: "", id_metodo: "", fecha_inicio: "", fecha_vencimiento: "", precio_unitario: "", estado_pagado: "0",
+  detalles: [{ id_cuenta: "", perfiles_alquilados: "1" }]
 };
 
 const ESTADO_PAGO_OPT = [
@@ -49,7 +53,7 @@ const ContratosPage = () => {
   const [data, setData] = useState<Contrato[]>([]);
   const [loading, setLoading] = useState(true);
   const [clientes, setClientes] = useState<{value: any, label: string}[]>([]);
-  const [cuentas, setCuentas] = useState<{value: any, label: string}[]>([]);
+  const [cuentas, setCuentas] = useState<{value: any, label: string, estado: string}[]>([]);
   const [metodosPago, setMetodosPago] = useState<{value: any, label: string}[]>([]);
 
   const [mesSeleccionado, setMesSeleccionado] = useState<number | "todos">("todos");
@@ -97,18 +101,44 @@ const ContratosPage = () => {
     setForm({ ...form, [name]: value });
   };
 
+  const handleDetalleChange = (index: number, name: string, value: string | number) => {
+    const nuevosDetalles = [...form.detalles];
+    nuevosDetalles[index] = { ...nuevosDetalles[index], [name]: value };
+    setForm({ ...form, detalles: nuevosDetalles });
+  };
+
+  const addDetalle = () => {
+    setForm({ ...form, detalles: [...form.detalles, { id_cuenta: "", perfiles_alquilados: "1" }] });
+  };
+
+  const removeDetalle = (index: number) => {
+    const nuevosDetalles = form.detalles.filter((_: any, i: number) => i !== index);
+    setForm({ ...form, detalles: nuevosDetalles });
+  };
+
+  const parseCuentas = (cuentasRaw: any): CuentaDetalle[] => {
+    if (!cuentasRaw) return [];
+    if (typeof cuentasRaw === "string") {
+      try { return JSON.parse(cuentasRaw); } catch { return []; }
+    }
+    return cuentasRaw as CuentaDetalle[];
+  };
+
   const openCreate = () => { setEditItem(null); setForm(INITIAL_FORM); setModalOpen(true); };
   const openEdit = (item: Contrato) => {
     setEditItem(item);
+    const cuentasArr = parseCuentas(item.cuentas);
     setForm({
       id_cliente: item.id_cliente, 
-      id_cuenta: item.id_cuenta, 
       id_metodo: item.id_metodo,
-      perfiles_alquilados: String(item.perfiles_alquilados),
       fecha_inicio: item.fecha_inicio.split("T")[0], 
       fecha_vencimiento: item.fecha_vencimiento.split("T")[0],
       precio_unitario: String(item.precio_unitario), 
       estado_pagado: String(item.estado_pagado),
+      detalles: cuentasArr.map(c => ({
+        id_cuenta: c.id_cuenta,
+        perfiles_alquilados: String(c.perfiles_alquilados)
+      }))
     });
     setModalOpen(true);
   };
@@ -116,15 +146,29 @@ const ContratosPage = () => {
 
   const handleSave = async () => {
     try {
+      if (form.detalles.length === 0) {
+        alert("Debes agregar al menos una cuenta al contrato.");
+        return;
+      }
+      if (form.detalles.some((d: any) => !d.id_cuenta || !d.perfiles_alquilados)) {
+        alert("Por favor completa los datos de todas las cuentas.");
+        return;
+      }
+
+      // Sumar el total de perfiles alquilados en todos los detalles
+      const totalPerfiles = form.detalles.reduce((acc: number, det: any) => acc + Number(det.perfiles_alquilados), 0);
+
       const dataToSend = {
         ...form,
         id_cliente: Number(form.id_cliente),
-        id_cuenta: Number(form.id_cuenta),
         id_metodo: Number(form.id_metodo),
-        perfiles_alquilados: Number(form.perfiles_alquilados),
         precio_unitario: Number(form.precio_unitario),
-        precio_total: Number(form.perfiles_alquilados) * Number(form.precio_unitario),
-        estado_pagado: Number(form.estado_pagado)
+        precio_total: totalPerfiles * Number(form.precio_unitario),
+        estado_pagado: Number(form.estado_pagado),
+        detalles: form.detalles.map((d: any) => ({
+          id_cuenta: Number(d.id_cuenta),
+          perfiles_alquilados: Number(d.perfiles_alquilados)
+        }))
       };
 
       if (editItem) {
@@ -134,7 +178,8 @@ const ContratosPage = () => {
       }
       setModalOpen(false);
       fetchInitialData();
-    } catch (error) {
+    } catch (error: any) {
+      alert(error.response?.data?.message || "Error al guardar el contrato");
       console.error("Error al guardar contrato:", error);
     }
   };
@@ -163,7 +208,16 @@ const ContratosPage = () => {
     const totalIngresos = datosFiltrados.reduce((sum, c) => sum + Number(c.precio_total), 0);
     const pagados = datosFiltrados.filter((c) => Number(c.estado_pagado) === 1).length;
     const pendientes = datosFiltrados.filter((c) => Number(c.estado_pagado) === 0).length;
-    const totalPerfiles = datosFiltrados.reduce((sum, c) => sum + Number(c.perfiles_alquilados), 0);
+    
+    // Sumar perfiles de todas las cuentas dentro de todos los contratos filtrados
+    let totalPerfiles = 0;
+    datosFiltrados.forEach(c => {
+      const arr = parseCuentas(c.cuentas);
+      arr.forEach(det => {
+        totalPerfiles += Number(det.perfiles_alquilados);
+      });
+    });
+
     return { totalContratos, totalIngresos, pagados, pendientes, totalPerfiles };
   }, [datosFiltrados]);
 
@@ -171,10 +225,25 @@ const ContratosPage = () => {
     () => [
       { accessorKey: "id_contrato", header: "ID", size: 60 },
       { accessorKey: "cliente", header: "Cliente", size: 150 },
-      { accessorKey: "cuenta", header: "Cuenta", size: 180 },
-      { accessorKey: "plataforma", header: "Plataforma", size: 110 },
+      { 
+        accessorKey: "cuentas", 
+        header: "Cuentas Incluidas", 
+        size: 250,
+        Cell: ({ cell }) => {
+          const cuentasRaw = cell.getValue<any>();
+          const arr = parseCuentas(cuentasRaw);
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              {arr.map((c, i) => (
+                <div key={i} style={{ fontSize: '0.85rem' }}>
+                  <span style={{ fontWeight: 600 }}>{c.plataforma}</span>: {c.email} ({c.perfiles_alquilados} perf.)
+                </div>
+              ))}
+            </div>
+          );
+        }
+      },
       { accessorKey: "metodo_pago", header: "Método Pago", size: 120 },
-      { accessorKey: "perfiles_alquilados", header: "Perfiles", size: 80 },
       { 
         accessorKey: "fecha_inicio", 
         header: "Inicio", 
@@ -186,12 +255,6 @@ const ContratosPage = () => {
         header: "Vencimiento", 
         size: 100,
         Cell: ({ cell }) => cell.getValue<string>()?.split("T")[0]
-      },
-      {
-        accessorKey: "precio_unitario",
-        header: "P. Unit.",
-        size: 80,
-        Cell: ({ cell }) => `S/ ${Number(cell.getValue<number>()).toFixed(2)}`,
       },
       {
         accessorKey: "precio_total",
@@ -214,13 +277,25 @@ const ContratosPage = () => {
   );
 
   const exportarExcel = () => {
-    const datosExport = datosFiltrados.map((c) => ({
-      "ID": c.id_contrato, "Cliente": c.cliente, "Cuenta": c.cuenta,
-      "Plataforma": c.plataforma, "Método Pago": c.metodo_pago,
-      "Perfiles": c.perfiles_alquilados, "Fecha Inicio": c.fecha_inicio.split("T")[0],
-      "Fecha Vencimiento": c.fecha_vencimiento.split("T")[0], "Precio Unitario": c.precio_unitario,
-      "Precio Total": c.precio_total, "Estado": c.estado_pagado === 1 ? "Pagado" : "Pendiente",
-    }));
+    const datosExport = datosFiltrados.map((c) => {
+      const arr = parseCuentas(c.cuentas);
+      const plataformas = arr.map(x => x.plataforma).join(", ");
+      const correos = arr.map(x => x.email).join(", ");
+      const totalPerf = arr.reduce((sum, x) => sum + Number(x.perfiles_alquilados), 0);
+
+      return {
+        "ID": c.id_contrato, 
+        "Cliente": c.cliente, 
+        "Plataformas": plataformas,
+        "Cuentas": correos,
+        "Total Perfiles": totalPerf,
+        "Método Pago": c.metodo_pago,
+        "Fecha Inicio": c.fecha_inicio.split("T")[0],
+        "Fecha Vencimiento": c.fecha_vencimiento.split("T")[0], 
+        "Precio Total": c.precio_total, 
+        "Estado": c.estado_pagado === 1 ? "Pagado" : "Pendiente",
+      };
+    });
     const ws = XLSX.utils.json_to_sheet(datosExport);
     const wb = XLSX.utils.book_new();
     const nombreHoja = mesSeleccionado === "todos"
@@ -331,16 +406,6 @@ const ContratosPage = () => {
             searchPlaceholder="Escribe el nombre del cliente..."
             required
           />
-          <FormCombobox
-            label="Cuenta"
-            name="id_cuenta"
-            value={form.id_cuenta}
-            onChange={handleComboboxChange}
-            options={cuentas.filter((c: any) => c.estado !== 'Caída' || c.value === Number(form.id_cuenta))}
-            placeholder="Buscar cuenta..."
-            searchPlaceholder="Escribe el email o plataforma..."
-            required
-          />
           <FormSelect
             label="Método de pago"
             name="id_metodo"
@@ -348,16 +413,6 @@ const ContratosPage = () => {
             onChange={handleChange}
             options={metodosPago}
             placeholder="Seleccionar método..."
-            required
-          />
-          <FormInput
-            label="Perfiles a alquilar"
-            name="perfiles_alquilados"
-            type="number"
-            value={form.perfiles_alquilados}
-            onChange={handleChange}
-            min={1}
-            max={7}
             required
           />
           <FormInput
@@ -377,7 +432,7 @@ const ContratosPage = () => {
             required
           />
           <FormInput
-            label="Precio unitario (S/)"
+            label="Precio por perfil (S/)"
             name="precio_unitario"
             type="number"
             value={form.precio_unitario}
@@ -396,13 +451,61 @@ const ContratosPage = () => {
             required
           />
         </div>
+
+        {/* Cuentas vinculadas al contrato */}
+        <div style={{ marginTop: '20px', borderTop: '1px solid #e2e8f0', paddingTop: '15px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <h4 style={{ margin: 0, color: '#1e293b', fontSize: '1rem' }}>Cuentas del Contrato</h4>
+            <button 
+              type="button" 
+              className="btn-secondary" 
+              onClick={addDetalle}
+              style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '5px 10px' }}
+            >
+              <Plus size={14} /> Añadir Cuenta
+            </button>
+          </div>
+
+          {form.detalles.map((detalle: any, index: number) => (
+            <div key={index} style={{ display: 'grid', gridTemplateColumns: '1fr 100px auto', gap: '10px', alignItems: 'end', marginBottom: '10px' }}>
+              <FormCombobox
+                label={`Cuenta #${index + 1}`}
+                name={`id_cuenta_${index}`}
+                value={detalle.id_cuenta}
+                onChange={(_, val) => handleDetalleChange(index, "id_cuenta", val)}
+                options={cuentas.filter((c: any) => c.estado !== 'Caída' || c.value === Number(detalle.id_cuenta))}
+                placeholder="Buscar cuenta..."
+                searchPlaceholder="Escribe el email..."
+                required
+              />
+              <FormInput
+                label="Perfiles"
+                name={`perfiles_${index}`}
+                type="number"
+                value={detalle.perfiles_alquilados}
+                onChange={(e) => handleDetalleChange(index, "perfiles_alquilados", e.target.value)}
+                min={1}
+                max={7}
+                required
+              />
+              <button 
+                type="button" 
+                onClick={() => removeDetalle(index)}
+                style={{ background: '#fee2e2', color: '#ef4444', border: 'none', padding: '8px', borderRadius: '6px', cursor: 'pointer', height: '38px', marginBottom: '4px' }}
+                title="Eliminar cuenta"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+          ))}
+        </div>
       </FormModal>
 
       <ConfirmDialog
         isOpen={confirmOpen}
         onClose={() => setConfirmOpen(false)}
         onConfirm={handleDelete}
-        message={`¿Estás seguro de eliminar el contrato #${deleteItem?.id_contrato} de "${deleteItem?.cliente}"? El perfil será liberado automáticamente.`}
+        message={`¿Estás seguro de eliminar el contrato #${deleteItem?.id_contrato} de "${deleteItem?.cliente}"? Los perfiles serán liberados automáticamente.`}
       />
     </>
   );

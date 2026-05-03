@@ -120,19 +120,25 @@ class FinanzasRepository {
             SELECT 
                 c.id_contrato,
                 cl.nombre  AS nombre_cliente,
-                cu.email  AS email_cuenta,
-                p.nombre  AS nombre_plataforma,
-                c.perfiles_alquilados,
                 c.fecha_inicio,
                 c.fecha_vencimiento,
-                c.precio_total
+                c.precio_total,
+                JSON_ARRAYAGG(
+                    JSON_OBJECT(
+                        'email_cuenta', cu.email,
+                        'nombre_plataforma', p.nombre,
+                        'perfiles_alquilados', cd.perfiles_alquilados
+                    )
+                ) AS detalles
             FROM contratos c
             INNER JOIN clientes    cl ON c.id_cliente    = cl.id_cliente
-            INNER JOIN cuentas     cu ON c.id_cuenta     = cu.id_cuenta
-            INNER JOIN plataformas p  ON cu.id_plataforma = p.id_plataforma
+            LEFT JOIN contratos_detalles cd ON c.id_contrato = cd.id_contrato
+            LEFT JOIN cuentas cu ON cd.id_cuenta = cu.id_cuenta
+            LEFT JOIN plataformas p ON cu.id_plataforma = p.id_plataforma
             WHERE c.estado_pagado = 0 
               AND MONTH(c.fecha_inicio) = ? 
               AND YEAR(c.fecha_inicio)  = ?
+            GROUP BY c.id_contrato
             ORDER BY c.precio_total DESC
         `;
         const [rows]: any = await pool.execute(sql, [mes, anio]);

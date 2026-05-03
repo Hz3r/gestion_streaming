@@ -23,12 +23,16 @@ type FinanzasMes = {
   utilidad_neta: number;
 };
 
+type CuentaDetalle = {
+  email_cuenta: string;
+  nombre_plataforma: string;
+  perfiles_alquilados: number;
+};
+
 type ContratoPendiente = {
   id_contrato: number;
-  cliente: string;
-  cuenta: string;
-  plataforma: string;
-  perfiles_alquilados: number;
+  nombre_cliente: string;
+  detalles: CuentaDetalle[] | string;
   fecha_inicio: string;
   fecha_vencimiento: string;
   precio_total: number;
@@ -140,11 +144,34 @@ const FinanzasPage = () => {
     { name: "Gastos/Pérdidas", value: Number(datosMesActual.gastos_perdidas) },
   ], [datosMesActual]);
 
+  const parseCuentas = (cuentasRaw: any): CuentaDetalle[] => {
+    if (!cuentasRaw) return [];
+    if (typeof cuentasRaw === "string") {
+      try { return JSON.parse(cuentasRaw); } catch { return []; }
+    }
+    return cuentasRaw as CuentaDetalle[];
+  };
+
   const columnsPendientes = useMemo<MRT_ColumnDef<ContratoPendiente>[]>(() => [
     { accessorKey: "id_contrato", header: "ID", size: 60 },
-    { accessorKey: "cliente", header: "Cliente", size: 160 },
-    { accessorKey: "cuenta", header: "Cuenta", size: 200 },
-    { accessorKey: "plataforma", header: "Plataforma", size: 120 },
+    { accessorKey: "nombre_cliente", header: "Cliente", size: 160 },
+    { 
+      accessorKey: "detalles", 
+      header: "Cuentas y Plataformas", 
+      size: 250,
+      Cell: ({ cell }) => {
+        const arr = parseCuentas(cell.getValue<any>());
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            {arr.map((c, i) => (
+              <div key={i} style={{ fontSize: '0.85rem' }}>
+                <span style={{ fontWeight: 600 }}>{c.nombre_plataforma}</span>: {c.email_cuenta} ({c.perfiles_alquilados} perf.)
+              </div>
+            ))}
+          </div>
+        );
+      }
+    },
     { 
       accessorKey: "fecha_vencimiento", 
       header: "Vencimiento", 

@@ -1,161 +1,199 @@
 import pool from "../config/db";
 import Contratos from "../models/Contratos";
-import ContratosDetalleDTO from "../dtos/ContratosDetalleDTO";
 
 class ContratoRepository{
-    //crear contrato
+    
+    // Crear contrato (Maestro-Detalle con Transacción)
     async crearContrato(contrato:Contratos):Promise<number> {
-        const sql = `INSERT INTO contratos(
-        id_cliente,
-        id_cuenta,
-        id_metodo,
-        perfiles_alquilados,
-        fecha_inicio,
-        fecha_vencimiento,
-        precio_unitario,
-        precio_total,
-        estado_pagado
-        ) 
-        VALUES (?,?,?,?,?,?,?,?,?)`;
-        const [result]:any = await pool.execute(sql,[
-            contrato.id_cliente,
-            contrato.id_cuenta,
-            contrato.id_metodo,
-            contrato.perfiles_alquilados,
-            contrato.fecha_inicio,
-            contrato.fecha_vencimiento,
-            contrato.precio_unitario,
-            contrato.precio_total,
-            contrato.estado_pagado
-        ]);
-        return result.insertId;
+        const connection = await pool.getConnection();
+        try {
+            await connection.beginTransaction();
+            
+            // Insertar Maestro
+            const sql = `INSERT INTO contratos(
+                id_cliente, id_metodo, fecha_inicio, fecha_vencimiento, 
+                precio_unitario, precio_total, estado_pagado
+            ) VALUES (?,?,?,?,?,?,?)`;
+            
+            const [result]:any = await connection.execute(sql,[
+                contrato.id_cliente ?? null, 
+                contrato.id_metodo ?? null, 
+                contrato.fecha_inicio ?? null, 
+                contrato.fecha_vencimiento ?? null, 
+                contrato.precio_unitario ?? 0, 
+                contrato.precio_total ?? 0, 
+                contrato.estado_pagado ?? 0
+            ]);
+            
+            const id_contrato = result.insertId;
+
+            // Insertar Detalles (Cuentas)
+            if (contrato.detalles && contrato.detalles.length > 0) {
+                const sqlDetalle = `INSERT INTO contratos_detalles (id_contrato, id_cuenta, perfiles_alquilados) VALUES (?,?,?)`;
+                for (const det of contrato.detalles) {
+                    await connection.execute(sqlDetalle, [id_contrato, det.id_cuenta ?? null, det.perfiles_alquilados ?? null]);
+                }
+            }
+
+            await connection.commit();
+            return id_contrato;
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
     }
 
-    //obtener todos los contratos
     async obtenerTodos():Promise<Contratos[]> {
         const sql = 'SELECT * FROM contratos';
         const [rows]:any = await pool.execute(sql);
         return rows;
     }
 
-    //obtener contrato por id
     async obtenerPorId(id:number):Promise<Contratos | null> {
         const sql = 'SELECT * FROM contratos WHERE id_contrato = ?';
-        const [rows]:any = await pool.execute(sql,[id]);
+        const [rows]:any = await pool.execute(sql,[id ?? null]);
         return rows.length > 0 ? rows[0] : null;
     }
 
-    //obtener contratos por cliente
     async obtenerPorCliente(id_cliente:number):Promise<Contratos[]> {
         const sql = 'SELECT * FROM contratos WHERE id_cliente = ?';
-        const [rows]:any = await pool.execute(sql,[id_cliente]);
+        const [rows]:any = await pool.execute(sql,[id_cliente ?? null]);
         return rows;
     }
 
-    //obtener contratos por cuenta
     async obtenerPorCuenta(id_cuenta:number):Promise<Contratos[]> {
-        const sql = 'SELECT * FROM contratos WHERE id_cuenta = ?';
-        const [rows]:any = await pool.execute(sql,[id_cuenta]);
+        const sql = `SELECT c.* FROM contratos c 
+                     INNER JOIN contratos_detalles cd ON c.id_contrato = cd.id_contrato 
+                     WHERE cd.id_cuenta = ?`;
+        const [rows]:any = await pool.execute(sql,[id_cuenta ?? null]);
         return rows;
     }
 
-    //contar perfiles ocupados en una cuenta (solo contratos activos/no vencidos)
     async contarPerfilesOcupados(id_cuenta:number):Promise<number> {
-        const sql = `SELECT COALESCE(SUM(perfiles_alquilados), 0) as total_perfiles 
-                     FROM contratos 
-                     WHERE id_cuenta = ? AND fecha_vencimiento >= CURDATE()`;
-        const [rows]:any = await pool.execute(sql,[id_cuenta]);
+        const sql = `SELECT COALESCE(SUM(cd.perfiles_alquilados), 0) as total_perfiles 
+                     FROM contratos c 
+                     INNER JOIN contratos_detalles cd ON c.id_contrato = cd.id_contrato
+                     WHERE cd.id_cuenta = ? AND c.fecha_vencimiento >= CURDATE()`;
+        const [rows]:any = await pool.execute(sql,[id_cuenta ?? null]);
         return rows[0].total_perfiles;
     }
 
-    //obtener detalle del contrato con JOINs
+    // Obtener contratos agrupando sus cuentas en un JSON Array
     async obtenerDetalleTodos(): Promise<any[]> {
         const sql = `SELECT 
             c.id_contrato,
             cl.nombre AS cliente,
-            cu.email AS cuenta,
-            p.nombre AS plataforma,
             mp.nombre AS metodo_pago,
-            c.perfiles_alquilados,
             c.fecha_inicio,
             c.fecha_vencimiento,
             c.precio_unitario,
             c.precio_total,
             c.estado_pagado,
             c.id_cliente,
-            c.id_cuenta,
-            c.id_metodo
+            c.id_metodo,
+            JSON_ARRAYAGG(
+                JSON_OBJECT(
+                    'id_cuenta', cu.id_cuenta,
+                    'email', cu.email,
+                    'plataforma', p.nombre,
+                    'perfiles_alquilados', cd.perfiles_alquilados
+                )
+            ) AS cuentas
         FROM contratos c
         INNER JOIN clientes cl ON c.id_cliente = cl.id_cliente
-        INNER JOIN cuentas cu ON c.id_cuenta = cu.id_cuenta
-        INNER JOIN plataformas p ON cu.id_plataforma = p.id_plataforma
-        INNER JOIN metodo_pago mp ON c.id_metodo = mp.id_metodo`;
+        INNER JOIN metodo_pago mp ON c.id_metodo = mp.id_metodo
+        LEFT JOIN contratos_detalles cd ON c.id_contrato = cd.id_contrato
+        LEFT JOIN cuentas cu ON cd.id_cuenta = cu.id_cuenta
+        LEFT JOIN plataformas p ON cu.id_plataforma = p.id_plataforma
+        GROUP BY c.id_contrato
+        ORDER BY c.id_contrato DESC`;
         const [rows]:any = await pool.execute(sql);
         return rows;
     }
 
-    //obtener detalle de un contrato por id con JOINs
     async obtenerDetallePorId(id: number): Promise<any | null> {
         const sql = `SELECT 
             c.id_contrato,
             cl.nombre AS cliente,
-            cu.email AS cuenta,
-            p.nombre AS plataforma,
             mp.nombre AS metodo_pago,
-            c.perfiles_alquilados,
             c.fecha_inicio,
             c.fecha_vencimiento,
             c.precio_unitario,
             c.precio_total,
             c.estado_pagado,
             c.id_cliente,
-            c.id_cuenta,
-            c.id_metodo
+            c.id_metodo,
+            JSON_ARRAYAGG(
+                JSON_OBJECT(
+                    'id_cuenta', cu.id_cuenta,
+                    'email', cu.email,
+                    'plataforma', p.nombre,
+                    'perfiles_alquilados', cd.perfiles_alquilados
+                )
+            ) AS cuentas
         FROM contratos c
         INNER JOIN clientes cl ON c.id_cliente = cl.id_cliente
-        INNER JOIN cuentas cu ON c.id_cuenta = cu.id_cuenta
-        INNER JOIN plataformas p ON cu.id_plataforma = p.id_plataforma
         INNER JOIN metodo_pago mp ON c.id_metodo = mp.id_metodo
-        WHERE c.id_contrato = ?`;
-        const [rows]:any = await pool.execute(sql,[id]);
+        LEFT JOIN contratos_detalles cd ON c.id_contrato = cd.id_contrato
+        LEFT JOIN cuentas cu ON cd.id_cuenta = cu.id_cuenta
+        LEFT JOIN plataformas p ON cu.id_plataforma = p.id_plataforma
+        WHERE c.id_contrato = ?
+        GROUP BY c.id_contrato`;
+        const [rows]:any = await pool.execute(sql,[id ?? null]);
         return rows.length > 0 ? rows[0] : null;
     }
 
-    //actualizar contrato
+    // Actualizar (Maestro-Detalle)
     async actualizar(id:number,contrato:Contratos):Promise<number> {
-        const sql = `UPDATE contratos SET 
-            id_cliente = ?, 
-            id_cuenta = ?, 
-            id_metodo = ?, 
-            perfiles_alquilados = ?, 
-            fecha_inicio = ?, 
-            fecha_vencimiento = ?, 
-            precio_unitario = ?, 
-            precio_total = ?,
-            estado_pagado = ? 
-            WHERE id_contrato = ?`;
-        const [result]:any = await pool.execute(sql,[
-            contrato.id_cliente,
-            contrato.id_cuenta,
-            contrato.id_metodo,
-            contrato.perfiles_alquilados,
-            contrato.fecha_inicio,
-            contrato.fecha_vencimiento,
-            contrato.precio_unitario,
-            contrato.precio_total,
-            contrato.estado_pagado,
-            id
-        ]);
-        return result.affectedRows;
+        const connection = await pool.getConnection();
+        try {
+            await connection.beginTransaction();
+            
+            const sql = `UPDATE contratos SET 
+                id_cliente = ?, id_metodo = ?, fecha_inicio = ?, 
+                fecha_vencimiento = ?, precio_unitario = ?, 
+                precio_total = ?, estado_pagado = ? 
+                WHERE id_contrato = ?`;
+                
+            await connection.execute(sql,[
+                contrato.id_cliente ?? null, 
+                contrato.id_metodo ?? null, 
+                contrato.fecha_inicio ?? null, 
+                contrato.fecha_vencimiento ?? null, 
+                contrato.precio_unitario ?? 0, 
+                contrato.precio_total ?? 0, 
+                contrato.estado_pagado ?? 0, 
+                id ?? null
+            ]);
+
+            // Recrear detalles si vienen en el objeto
+            if (contrato.detalles) {
+                await connection.execute(`DELETE FROM contratos_detalles WHERE id_contrato = ?`, [id ?? null]);
+                if (contrato.detalles.length > 0) {
+                    const sqlDetalle = `INSERT INTO contratos_detalles (id_contrato, id_cuenta, perfiles_alquilados) VALUES (?,?,?)`;
+                    for (const det of contrato.detalles) {
+                        await connection.execute(sqlDetalle, [id ?? null, det.id_cuenta ?? null, det.perfiles_alquilados ?? null]);
+                    }
+                }
+            }
+
+            await connection.commit();
+            return 1;
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
     }
 
-    //eliminar contrato
     async eliminar(id:number):Promise<number> {
         const sql = 'DELETE FROM contratos WHERE id_contrato = ?';
-        const [result]:any = await pool.execute(sql,[id]);
+        const [result]:any = await pool.execute(sql,[id ?? null]);
         return result.affectedRows;
     }
-
 }
 
 export default new ContratoRepository();

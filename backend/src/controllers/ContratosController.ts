@@ -1,4 +1,4 @@
-import ContratoService from "../services/ContratosService";
+import ContratoService from "../services/ContratoService";
 import { Request, Response } from "express";
 
 class ContratosController {
