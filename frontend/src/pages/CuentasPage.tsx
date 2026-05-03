@@ -5,8 +5,12 @@ import FormModal from "../components/common/FormModal";
 import FormInput from "../components/common/FormInput";
 import FormSelect from "../components/common/FormSelect";
 import FormCombobox from "../components/common/FormCombobox";
+import FormSwitch from "../components/common/FormSwitch";
 import ConfirmDialog from "../components/common/ConfirmDialog";
 import { Users, Save } from "lucide-react";
+import { useToast } from "../context/ToastContext";
+import { parseError } from "../utils/errorParser";
+import { formatFullDate } from "../utils/dateUtils";
 import { 
   getCuentas, createCuenta, updateCuenta, deleteCuenta, 
   getPlataformas, getProveedores 
@@ -27,12 +31,13 @@ type Cuenta = {
   perfiles_en_uso: number;
   costo_total: number;
   meses_duracion: number;
+  es_lank?: boolean;
 };
 
 const INITIAL_FORM = {
   email: "", contraseña: "", fecha_compra: "", fecha_expiracion: "",
   id_plataforma: "", id_proveedor: "", estado: "Activa", capacidad_total: "4",
-  costo_total: "0", meses_duracion: "1"
+  costo_total: "0", meses_duracion: "1", es_lank: false
 };
 
 const ESTADOS_OPT = [
@@ -42,6 +47,7 @@ const ESTADOS_OPT = [
 ];
 
 const CuentasPage = () => {
+  const { showToast } = useToast();
   const [data, setData] = useState<Cuenta[]>([]);
   const [loading, setLoading] = useState(true);
   const [plataformas, setPlataformas] = useState<{value: any, label: string}[]>([]);
@@ -70,6 +76,7 @@ const CuentasPage = () => {
       setProveedores(resProv.data.map((p: any) => ({ value: p.id_proveedor, label: p.nombre })));
     } catch (error) {
       console.error("Error al cargar datos de cuentas:", error);
+      showToast("Error al cargar datos de cuentas", "error");
     } finally {
       setLoading(false);
     }
@@ -96,7 +103,8 @@ const CuentasPage = () => {
       estado: item.estado, 
       capacidad_total: String(item.capacidad_total),
       costo_total: String(item.costo_total),
-      meses_duracion: String(item.meses_duracion)
+      meses_duracion: String(item.meses_duracion),
+      es_lank: item.es_lank || false
     });
     setModalOpen(true);
   };
@@ -104,22 +112,32 @@ const CuentasPage = () => {
 
   const handleSave = async () => {
     try {
+      // VALIDACIÓN DE FECHAS
+      if (form.fecha_expiracion < form.fecha_compra) {
+        showToast("La fecha de expiración no puede ser anterior a la de compra", "error");
+        return;
+      }
+
       const dataToSend = {
         ...form,
         capacidad_total: Number(form.capacidad_total),
         costo_total: Number(form.costo_total),
-        meses_duracion: Number(form.meses_duracion)
+        meses_duracion: Number(form.meses_duracion),
+        es_lank: Boolean(form.es_lank)
       };
 
       if (editItem) {
         await updateCuenta(editItem.id_cuenta, dataToSend);
+        showToast("Cuenta actualizada correctamente", "success");
       } else {
         await createCuenta(dataToSend);
+        showToast("Cuenta creada con éxito", "success");
       }
       setModalOpen(false);
       fetchInitialData();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error al guardar cuenta:", error);
+      showToast(parseError(error), "error");
     }
   };
 
@@ -127,18 +145,35 @@ const CuentasPage = () => {
     if (!deleteItem) return;
     try {
       await deleteCuenta(deleteItem.id_cuenta);
+      showToast("Cuenta eliminada", "success");
       setConfirmOpen(false);
       fetchInitialData();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error al eliminar cuenta:", error);
+      showToast(parseError(error), "error");
     }
   };
 
   const columns = useMemo<MRT_ColumnDef<Cuenta>[]>(
     () => [
-      { accessorKey: "id_cuenta", header: "ID", size: 60 },
+      { 
+        accessorKey: "id_cuenta", 
+        header: "#", 
+        size: 60,
+        Cell: ({ row }) => row.index + 1
+      },
       { accessorKey: "email", header: "Email", size: 200 },
-      { accessorKey: "plataforma", header: "Plataforma", size: 110 },
+      { 
+        accessorKey: "plataforma", 
+        header: "Plataforma", 
+        size: 110,
+        Cell: ({ row, cell }) => (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span>{cell.getValue<string>()}</span>
+            {row.original.es_lank && <span className="badge badge--warning">Lank</span>}
+          </div>
+        )
+      },
       {
         accessorKey: "estado",
         header: "Estado",
@@ -189,8 +224,12 @@ const CuentasPage = () => {
       { 
         accessorKey: "fecha_expiracion", 
         header: "Expiración", 
-        size: 110,
-        Cell: ({ cell }) => cell.getValue<string>()?.split("T")[0]
+        size: 160,
+        Cell: ({ cell }) => (
+          <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>
+            {formatFullDate(cell.getValue<string>())}
+          </span>
+        )
       },
     ],
     []
@@ -205,6 +244,9 @@ const CuentasPage = () => {
         onAdd={openCreate}
         onEdit={openEdit}
         onDelete={openDelete}
+        addPermission="cuentas:create"
+        editPermission="cuentas:edit"
+        deletePermission="cuentas:delete"
       />
 
       <FormModal
@@ -310,6 +352,13 @@ const CuentasPage = () => {
             onChange={handleChange}
             min={1}
             required
+          />
+          <FormSwitch
+            label="¿Es Cuenta de Lank?"
+            name="es_lank"
+            checked={form.es_lank}
+            onChange={(val) => setForm({ ...form, es_lank: val })}
+            description="Las inversiones de esta cuenta se asignarán al módulo Lank."
           />
         </div>
       </FormModal>

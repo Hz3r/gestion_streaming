@@ -1,20 +1,17 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ChevronDown, User, Settings, LogOut } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
-interface UserProfileProps {
-    name?: string;
-    role?: string;
-    avatarUrl?: string;
-}
-
-const UserProfile: React.FC<UserProfileProps> = ({
-    name = "Admin User",
-    role = "Administrador",
-    avatarUrl,
-}) => {
+const UserProfile: React.FC = () => {
+    const { user, logout } = useAuth();
+    const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+
+    const name = user?.nombre || "Usuario";
+    const role = user?.rol === 1 ? "Administrador" : "Vendedor";
+    const avatarUrl = user?.foto;
 
     const initials = name
         .split(" ")
@@ -32,6 +29,11 @@ const UserProfile: React.FC<UserProfileProps> = ({
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
+
+    const handleLogout = () => {
+        logout();
+        navigate("/login");
+    };
 
     return (
         <div className="user-profile-container" ref={dropdownRef}>
@@ -73,7 +75,7 @@ const UserProfile: React.FC<UserProfileProps> = ({
                         </li>
                         <li className="user-profile-dropdown__divider" />
                         <li>
-                            <button className="user-profile-dropdown__item user-profile-dropdown__item--danger" onClick={() => console.log("Logout")}>
+                            <button className="user-profile-dropdown__item user-profile-dropdown__item--danger" onClick={handleLogout}>
                                 <LogOut size={16} />
                                 <span>Cerrar Sesión</span>
                             </button>

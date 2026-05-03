@@ -37,9 +37,9 @@ export const updateContrato = (id: number, data: any) => api.put(`/contratos/${i
 export const deleteContrato = (id: number) => api.delete(`/contratos/${id}`);
 
 // ─── FINANZAS ───
-export const getResumenGeneral = () => api.get("/finanzas/resumen");
-export const getResumenAnual = (anio: number) => api.get(`/finanzas/resumen/${anio}`);
-export const getPendientesMensual = (mes: number, anio: number) => api.get(`/finanzas/pendientes/${anio}/${mes}`);
+export const getResumenGeneral = (tipo?: string) => api.get(`/finanzas/resumen${tipo ? `?tipo=${tipo}` : ''}`);
+export const getResumenAnual = (anio: number, tipo?: string) => api.get(`/finanzas/resumen/${anio}${tipo ? `?tipo=${tipo}` : ''}`);
+export const getPendientesMensual = (mes: number, anio: number, tipo?: string) => api.get(`/finanzas/pendientes/${anio}/${mes}${tipo ? `?tipo=${tipo}` : ''}`);
 export const cerrarMes = (data: { mes: number, anio: number, montoStaff: number }) => api.post("/finanzas/cerrar-mes", data);
 
 // ─── USUARIOS / ROLES ───
@@ -54,6 +54,7 @@ export const deleteRol = (id: number) => api.delete(`/roles/${id}`);
 
 export const updatePerfil = (id: number, data: any) => api.put(`/usuarios/perfil/${id}`, data);
 export const updatePassword = (id: number, data: any) => api.put(`/usuarios/password/${id}`, data);
+export const getUserStats = (id: number) => api.get(`/usuarios/stats/${id}`);
 
 // ─── CONFIGURACION ───
 export const getConfiguracion = () => api.get("/configuracion");
@@ -69,6 +70,8 @@ export const getLankCuentas = () => api.get("/lank");
 export const createLankCuenta = (data: any) => api.post("/lank", data);
 export const updateLankCuenta = (id: number, data: any) => api.put(`/lank/${id}`, data);
 export const deleteLankCuenta = (id: number) => api.delete(`/lank/${id}`);
+export const cerrarMesLank = (data: { mes: number, anio: number }) => api.post("/lank/cerrar-mes", data);
+export const eliminarCierreLank = (data: { mes: number, anio: number }) => api.post("/lank/eliminar-cierre", data);
 
 // ─── CUENTAS ROTATIVAS & HISTORIAL ───
 export const getRotativaPorCuenta = (id_cuenta: number) => api.get(`/rotativas/cuenta/${id_cuenta}`);

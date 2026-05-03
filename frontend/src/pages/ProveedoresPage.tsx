@@ -6,6 +6,8 @@ import FormInput from "../components/common/FormInput";
 import FormSelect from "../components/common/FormSelect";
 import ConfirmDialog from "../components/common/ConfirmDialog";
 import { Truck, Save } from "lucide-react";
+import { useToast } from "../context/ToastContext";
+import { parseError } from "../utils/errorParser";
 import { getProveedores, createProveedor, updateProveedor, deleteProveedor } from "../services/dashboardService";
 
 type Proveedor = {
@@ -25,6 +27,7 @@ const REPUTACIONES = [
 ];
 
 const ProveedoresPage = () => {
+  const { showToast } = useToast();
   const [data, setData] = useState<Proveedor[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -44,6 +47,7 @@ const ProveedoresPage = () => {
       setData(res.data);
     } catch (error) {
       console.error("Error al cargar proveedores:", error);
+      showToast("Error al cargar proveedores", "error");
     } finally {
       setLoading(false);
     }
@@ -65,13 +69,16 @@ const ProveedoresPage = () => {
     try {
       if (editItem) {
         await updateProveedor(editItem.id_proveedor, form);
+        showToast("Proveedor actualizado", "success");
       } else {
         await createProveedor(form);
+        showToast("Proveedor creado con éxito", "success");
       }
       setModalOpen(false);
       fetchData();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error al guardar proveedor:", error);
+      showToast(parseError(error), "error");
     }
   };
 
@@ -79,16 +86,23 @@ const ProveedoresPage = () => {
     if (!deleteItem) return;
     try {
       await deleteProveedor(deleteItem.id_proveedor);
+      showToast("Proveedor eliminado", "success");
       setConfirmOpen(false);
       fetchData();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error al eliminar proveedor:", error);
+      showToast(parseError(error), "error");
     }
   };
 
   const columns = useMemo<MRT_ColumnDef<Proveedor>[]>(
     () => [
-      { accessorKey: "id_proveedor", header: "ID", size: 80 },
+      { 
+        accessorKey: "id_proveedor", 
+        header: "#", 
+        size: 80,
+        Cell: ({ row }) => row.index + 1
+      },
       { accessorKey: "nombre", header: "Nombre", size: 180 },
       {
         accessorKey: "url_contacto",

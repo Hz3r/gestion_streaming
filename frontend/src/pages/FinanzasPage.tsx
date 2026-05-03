@@ -7,10 +7,14 @@ import {
 } from "recharts";
 import {
   Calendar, DollarSign, TrendingUp, AlertCircle, CheckCircle,
-  X, Download, Lock
+  X, Download, Lock,
+  ShieldAlert
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { getResumenAnual, getPendientesMensual, cerrarMes } from "../services/dashboardService";
+import { useToast } from "../context/ToastContext";
+import FormModal from "../components/common/FormModal";
+import FormInput from "../components/common/FormInput";
 
 type FinanzasMes = {
   mes: number;
@@ -49,37 +53,48 @@ const MESES_FULL = [
 ];
 
 const COLORS = {
-  real: "#41c98e",
-  pendiente: "#ffbb38",
-  inversion: "#4c6ef5",
-  gastos: "#fa5252",
-  utilidad: "#7c5cfc",
-  pie: ["#41c98e", "#ffbb38", "#fa5252"],
+  cobrado: "#10b981",    // Verde Esmeralda
+  pendiente: "#f59e0b",  // Ámbar
+  inversion: "#3b82f6",  // Azul Brillante
+  gastos: "#f43f5e",     // Rosa/Rojo
+  utilidad: "#8b5cf6",   // Violeta
 };
 
 const FinanzasPage = () => {
+  const { showToast } = useToast();
   const [data, setData] = useState<FinanzasMes[]>([]);
   const [loading, setLoading] = useState(true);
   const [anioSeleccionado, setAnioSeleccionado] = useState<number>(new Date().getFullYear());
   const [mesDetalle, setMesDetalle] = useState<number | null>(null);
-  
+  const [activeTab, setActiveTab] = useState<'Directas' | 'Lank'>(
+    (localStorage.getItem('finanzas_tab') as any) || 'Lank'
+  );
+
+  useEffect(() => {
+    localStorage.setItem('finanzas_tab', activeTab);
+  }, [activeTab]);
+
   const [pendientes, setPendientes] = useState<ContratoPendiente[]>([]);
   const [loadingPendientes, setLoadingPendientes] = useState(false);
   const [mostrarPendientes, setMostrarPendientes] = useState(false);
+  
+  const [cerrarMesModalOpen, setCerrarMesModalOpen] = useState(false);
+  const [montoStaff, setMontoStaff] = useState("300");
 
   useEffect(() => {
     fetchData();
-  }, [anioSeleccionado]);
+  }, [anioSeleccionado, activeTab]);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await getResumenAnual(anioSeleccionado);
+      const res = await getResumenAnual(anioSeleccionado, activeTab);
+      console.log(`Datos Finanzas (${activeTab}):`, res.data);
       const fullData = Array.from({ length: 12 }, (_, i) => {
         const mes = i + 1;
         const exist = res.data.find((d: any) => d.mes === mes);
-        return exist || { 
-          mes, anio: anioSeleccionado, 
+        return exist || {
+          mes, anio: anioSeleccionado,
           ingresos_reales: 0, ingresos_pendientes: 0, ingresos_proyectados: 0,
           inversiones: 0, gastos_perdidas: 0, utilidad_neta: 0
         };
@@ -94,16 +109,22 @@ const FinanzasPage = () => {
 
   const handleCerrarMes = async () => {
     const mes = mesDetalle ?? new Date().getMonth() + 1;
-    const monto = prompt(`Ingrese el monto total de pago a Staff para ${MESES_FULL[mes-1]}:`, "300");
-    if (!monto) return;
-
     try {
-      await cerrarMes({ mes, anio: anioSeleccionado, montoStaff: Number(monto) });
-      alert("Mes cerrado con éxito");
+      await cerrarMes({ mes, anio: anioSeleccionado, montoStaff: Number(montoStaff) });
+      showToast("Mes cerrado con éxito", "success");
+      setCerrarMesModalOpen(false);
       fetchData();
     } catch (error) {
       console.error("Error al cerrar mes:", error);
+      showToast("Error al cerrar mes", "error");
     }
+  };
+
+  const handleExport = () => {
+    const ws = XLSX.utils.json_to_sheet(chartData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Resumen Financiero");
+    XLSX.writeFile(wb, `Reporte_Finanzas_${activeTab}_${anioSeleccionado}.xlsx`);
   };
 
   const handleVerPendientes = async () => {
@@ -111,7 +132,7 @@ const FinanzasPage = () => {
     setLoadingPendientes(true);
     setMostrarPendientes(true);
     try {
-      const res = await getPendientesMensual(mes, anioSeleccionado);
+      const res = await getPendientesMensual(mes, anioSeleccionado, activeTab);
       setPendientes(res.data);
     } catch (error) {
       console.error("Error al cargar pendientes:", error);
@@ -132,17 +153,19 @@ const FinanzasPage = () => {
   const chartData = useMemo(() =>
     data.map(d => ({
       mes: MESES[d.mes - 1],
-      "Ingreso Real": Number(d.ingresos_reales),
+      "Cobrado": Number(d.ingresos_reales),
+      "Pendiente": Number(d.ingresos_pendientes),
       "Inversión": Number(d.inversiones),
       "Gastos/Pérdidas": Number(d.gastos_perdidas),
-      "Utilidad Neta": Number(d.utilidad_neta),
+      "Utilidad": Number(d.utilidad_neta),
     })), [data]);
 
   const pieData = useMemo(() => [
-    { name: "Ingreso", value: Number(datosMesActual.ingresos_reales) },
+    { name: "Cobrado", value: Number(datosMesActual.ingresos_reales) },
+    { name: "Pendiente", value: Number(datosMesActual.ingresos_pendientes) },
     { name: "Inversión", value: Number(datosMesActual.inversiones) },
     { name: "Gastos/Pérdidas", value: Number(datosMesActual.gastos_perdidas) },
-  ], [datosMesActual]);
+  ].filter(p => p.value > 0), [datosMesActual]);
 
   const parseCuentas = (cuentasRaw: any): CuentaDetalle[] => {
     if (!cuentasRaw) return [];
@@ -155,9 +178,9 @@ const FinanzasPage = () => {
   const columnsPendientes = useMemo<MRT_ColumnDef<ContratoPendiente>[]>(() => [
     { accessorKey: "id_contrato", header: "ID", size: 60 },
     { accessorKey: "nombre_cliente", header: "Cliente", size: 160 },
-    { 
-      accessorKey: "detalles", 
-      header: "Cuentas y Plataformas", 
+    {
+      accessorKey: "detalles",
+      header: "Cuentas y Plataformas",
       size: 250,
       Cell: ({ cell }) => {
         const arr = parseCuentas(cell.getValue<any>());
@@ -172,9 +195,9 @@ const FinanzasPage = () => {
         );
       }
     },
-    { 
-      accessorKey: "fecha_vencimiento", 
-      header: "Vencimiento", 
+    {
+      accessorKey: "fecha_vencimiento",
+      header: "Vencimiento",
       size: 100,
       Cell: ({ cell }) => cell.getValue<string>()?.split("T")[0]
     },
@@ -213,66 +236,112 @@ const FinanzasPage = () => {
             {MESES_FULL.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
           </select>
         </div>
-        <div className="header-actions">
-          <button className="btn-secondary" onClick={handleCerrarMes}>
-            <Lock size={16} />
-            Cerrar Mes
+
+        <div className="finanzas-tabs">
+          <button
+            className={`finanzas-tab ${activeTab === 'Directas' ? 'finanzas-tab--active' : ''}`}
+            onClick={() => setActiveTab('Directas')}
+          >
+            Directas
           </button>
-          <button className="btn-export" onClick={() => {}}>
+          <button
+            className={`finanzas-tab ${activeTab === 'Lank' ? 'finanzas-tab--active' : ''}`}
+            onClick={() => setActiveTab('Lank')}
+          >
+            Lank
+          </button>
+        </div>
+
+        <div className="header-actions">
+          <button className="btn-export" onClick={handleExport}>
             <Download size={16} />
-            Reporte
+            Reporte Excel
           </button>
         </div>
       </div>
-
-      <div className="finanzas-kpi-grid">
-        <div className="finanzas-kpi finanzas-kpi--real">
-          <div className="finanzas-kpi__icon-wrap finanzas-kpi__icon-wrap--real">
-            <CheckCircle size={22} />
+      <div className="finanzas-kpi-grid" style={{ gridTemplateColumns: activeTab === 'Lank' ? 'repeat(3, 1fr)' : 'repeat(4, 1fr)', gap: 'var(--space-4)' }}>
+        <div 
+          className="finanzas-kpi finanzas-kpi--real finanzas-kpi--clickable"
+          onClick={handleVerPendientes}
+        >
+          <div className="finanzas-kpi__icon-wrap finanzas-kpi__icon-wrap--real" style={{ backgroundColor: COLORS.cobrado }}>
+            <CheckCircle size={22} color="white" />
           </div>
           <div className="finanzas-kpi__content">
-            <span className="finanzas-kpi__label">Ingresos Brutos</span>
-            <span className="finanzas-kpi__sublabel">{mesActualLabel} (Cobrado)</span>
-            <span className="finanzas-kpi__value finanzas-kpi__value--real">
+            <span className="finanzas-kpi__label">
+              {activeTab === 'Lank' ? 'Ingresos Cobrados' : 'Ingresos Brutos'}
+            </span>
+            <span className="finanzas-kpi__sublabel">{mesActualLabel} (Real)</span>
+            <span className="finanzas-kpi__value" style={{ color: COLORS.cobrado }}>
               S/ {Number(datosMesActual.ingresos_reales).toFixed(2)}
             </span>
           </div>
         </div>
 
+        {activeTab === 'Lank' && (
+          <div className="finanzas-kpi finanzas-kpi--proyectado">
+            <div className="finanzas-kpi__icon-wrap finanzas-kpi__icon-wrap--proyectado" style={{ backgroundColor: COLORS.pendiente }}>
+              <TrendingUp size={22} color="white" />
+            </div>
+            <div className="finanzas-kpi__content">
+              <span className="finanzas-kpi__label">Ingresos Proyectados</span>
+              <span className="finanzas-kpi__sublabel">Total estimado</span>
+              <span className="finanzas-kpi__value" style={{ color: COLORS.pendiente }}>
+                S/ {Number(datosMesActual.ingresos_proyectados).toFixed(2)}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'Lank' && (
+          <div className="finanzas-kpi finanzas-kpi--pendiente">
+            <div className="finanzas-kpi__icon-wrap finanzas-kpi__icon-wrap--pendiente" style={{ backgroundColor: COLORS.pendiente, opacity: 0.8 }}>
+              <AlertCircle size={22} color="white" />
+            </div>
+            <div className="finanzas-kpi__content">
+              <span className="finanzas-kpi__label">Ingresos Pendientes</span>
+              <span className="finanzas-kpi__sublabel">Por cobrar</span>
+              <span className="finanzas-kpi__value" style={{ color: COLORS.pendiente }}>
+                S/ {Number(datosMesActual.ingresos_pendientes).toFixed(2)}
+              </span>
+            </div>
+          </div>
+        )}
+
         <div className="finanzas-kpi finanzas-kpi--proyectado">
-          <div className="finanzas-kpi__icon-wrap finanzas-kpi__icon-wrap--proyectado">
-            <TrendingUp size={22} />
+          <div className="finanzas-kpi__icon-wrap finanzas-kpi__icon-wrap--proyectado" style={{ backgroundColor: COLORS.inversion }}>
+            <Calendar size={22} color="white" />
           </div>
           <div className="finanzas-kpi__content">
             <span className="finanzas-kpi__label">Inversión del Mes</span>
             <span className="finanzas-kpi__sublabel">Cuentas compradas</span>
-            <span className="finanzas-kpi__value finanzas-kpi__value--proyectado">
+            <span className="finanzas-kpi__value" style={{ color: COLORS.inversion }}>
               S/ {Number(datosMesActual.inversiones).toFixed(2)}
             </span>
           </div>
         </div>
 
         <div className="finanzas-kpi finanzas-kpi--pendiente">
-          <div className="finanzas-kpi__icon-wrap finanzas-kpi__icon-wrap--pendiente">
-            <AlertCircle size={22} />
+          <div className="finanzas-kpi__icon-wrap finanzas-kpi__icon-wrap--pendiente" style={{ backgroundColor: COLORS.gastos }}>
+            <ShieldAlert size={22} color="white" />
           </div>
           <div className="finanzas-kpi__content">
-            <span className="finanzas-kpi__label">Gastos y Pérdidas</span>
-            <span className="finanzas-kpi__sublabel">Baneos + Operación</span>
-            <span className="finanzas-kpi__value finanzas-kpi__value--pendiente">
+            <span className="finanzas-kpi__label">Baneos y Gastos</span>
+            <span className="finanzas-kpi__sublabel">Pérdidas Lank</span>
+            <span className="finanzas-kpi__value" style={{ color: COLORS.gastos }}>
               S/ {Number(datosMesActual.gastos_perdidas).toFixed(2)}
             </span>
           </div>
         </div>
 
         <div className="finanzas-kpi finanzas-kpi--utilidad">
-          <div className="finanzas-kpi__icon-wrap finanzas-kpi__icon-wrap--utilidad">
-            <DollarSign size={22} />
+          <div className="finanzas-kpi__icon-wrap finanzas-kpi__icon-wrap--utilidad" style={{ backgroundColor: COLORS.utilidad }}>
+            <DollarSign size={22} color="white" />
           </div>
           <div className="finanzas-kpi__content">
             <span className="finanzas-kpi__label">Utilidad Neta</span>
-            <span className="finanzas-kpi__sublabel">Dinero disponible</span>
-            <span className="finanzas-kpi__value finanzas-kpi__value--utilidad">
+            <span className="finanzas-kpi__sublabel">Cobrado - Egresos</span>
+            <span className="finanzas-kpi__value" style={{ color: COLORS.utilidad }}>
               S/ {Number(datosMesActual.utilidad_neta).toFixed(2)}
             </span>
           </div>
@@ -290,7 +359,9 @@ const FinanzasPage = () => {
               <XAxis dataKey="mes" />
               <YAxis />
               <RTooltip />
-              <Bar dataKey="Ingreso Real" fill={COLORS.real} radius={[4, 4, 0, 0]} />
+              <Legend />
+              <Bar dataKey="Cobrado" fill={COLORS.cobrado} radius={[4, 4, 0, 0]} />
+              {activeTab === 'Lank' && <Bar dataKey="Pendiente" fill={COLORS.pendiente} radius={[4, 4, 0, 0]} />}
               <Bar dataKey="Inversión" fill={COLORS.inversion} radius={[4, 4, 0, 0]} />
               <Bar dataKey="Gastos/Pérdidas" fill={COLORS.gastos} radius={[4, 4, 0, 0]} />
             </BarChart>
@@ -308,7 +379,13 @@ const FinanzasPage = () => {
                 innerRadius={60} outerRadius={85}
                 paddingAngle={5} dataKey="value"
               >
-                {pieData.map((_, i) => <Cell key={i} fill={COLORS.pie[i % COLORS.pie.length]} />)}
+                {pieData.map((entry) => {
+                  let color = COLORS.cobrado;
+                  if (entry.name === "Pendiente") color = COLORS.pendiente;
+                  if (entry.name === "Inversión") color = COLORS.inversion;
+                  if (entry.name === "Gastos/Pérdidas") color = COLORS.gastos;
+                  return <Cell key={entry.name} fill={color} />;
+                })}
               </Pie>
               <Legend />
               <RTooltip />
@@ -326,7 +403,9 @@ const FinanzasPage = () => {
             <thead>
               <tr>
                 <th>Mes</th>
-                <th>Ingresos</th>
+                <th>{activeTab === 'Lank' ? 'Cobrado' : 'Ingresos Brutos'}</th>
+                <th>Pendientes</th>
+                <th>Proyectado</th>
                 <th>Inversión</th>
                 <th>Gastos/Pérdidas</th>
                 <th>Utilidad Neta</th>
@@ -336,15 +415,28 @@ const FinanzasPage = () => {
               {data.filter(d => Number(d.ingresos_proyectados) > 0 || Number(d.gastos_perdidas) > 0 || Number(d.inversiones) > 0).map((d) => (
                 <tr key={d.mes}>
                   <td>{MESES_FULL[d.mes - 1]}</td>
-                  <td className="td-real">S/ {Number(d.ingresos_reales).toFixed(2)}</td>
-                  <td className="td-proyectado">S/ {Number(d.inversiones).toFixed(2)}</td>
-                  <td className="td-pendiente">S/ {Number(d.gastos_perdidas).toFixed(2)}</td>
-                  <td className="td-utilidad">S/ {Number(d.utilidad_neta).toFixed(2)}</td>
+                  <td style={{ fontWeight: 'bold', color: COLORS.cobrado }}>S/ {Number(d.ingresos_reales).toFixed(2)}</td>
+                  <td style={{ color: COLORS.pendiente }}>S/ {Number(d.ingresos_pendientes).toFixed(2)}</td>
+                  <td style={{ color: COLORS.pendiente, opacity: 0.8 }}>S/ {Number(d.ingresos_proyectados).toFixed(2)}</td>
+                  <td style={{ color: COLORS.inversion }}>S/ {Number(d.inversiones).toFixed(2)}</td>
+                  <td style={{ color: COLORS.gastos }}>S/ {Number(d.gastos_perdidas).toFixed(2)}</td>
+                  <td style={{ fontWeight: 'bold', color: COLORS.utilidad }}>S/ {Number(d.utilidad_neta).toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '20px' }}>
+        <button
+          className="btn-secondary"
+          onClick={handleCerrarMes}
+          style={{ opacity: 0.6, fontSize: '0.75rem' }}
+        >
+          <Lock size={14} />
+          Realizar Cierre Mensual (Historial)
+        </button>
       </div>
 
       {mostrarPendientes && (
@@ -364,6 +456,34 @@ const FinanzasPage = () => {
           </div>
         </div>
       )}
+
+      <FormModal
+        isOpen={cerrarMesModalOpen}
+        onClose={() => setCerrarMesModalOpen(false)}
+        title={`Cerrar Mes — ${mesActualLabel}`}
+        icon={<Lock size={20} />}
+        size="sm"
+        footer={
+          <div className="modal-footer-actions">
+            <button className="btn-secondary" onClick={() => setCerrarMesModalOpen(false)}>Cancelar</button>
+            <button className="btn-primary" onClick={handleCerrarMes}>Confirmar Cierre</button>
+          </div>
+        }
+      >
+        <div className="form-grid form-grid--single">
+          <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+            Ingrese el monto total pagado al Staff para este periodo ({mesActualLabel} {anioSeleccionado}).
+          </p>
+          <FormInput
+            label="Monto Staff (S/)"
+            name="montoStaff"
+            type="number"
+            value={montoStaff}
+            onChange={(e) => setMontoStaff(e.target.value)}
+            required
+          />
+        </div>
+      </FormModal>
     </div>
   );
 };

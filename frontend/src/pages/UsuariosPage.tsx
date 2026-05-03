@@ -6,6 +6,8 @@ import FormInput from "../components/common/FormInput";
 import FormSelect from "../components/common/FormSelect";
 import ConfirmDialog from "../components/common/ConfirmDialog";
 import { User, Save } from "lucide-react";
+import { useToast } from "../context/ToastContext";
+import { parseError } from "../utils/errorParser";
 import { getUsuarios, createUsuario, updateUsuario, deleteUsuario, getRoles } from "../services/dashboardService";
 
 type Usuario = {
@@ -19,6 +21,7 @@ type Usuario = {
 const INITIAL_FORM = { nombre: "", contraseña: "", id_rol: "" };
 
 const UsuariosPage = () => {
+  const { showToast } = useToast();
   const [data, setData] = useState<Usuario[]>([]);
   const [loading, setLoading] = useState(true);
   const [roles, setRoles] = useState<{value: any, label: string}[]>([]);
@@ -44,6 +47,7 @@ const UsuariosPage = () => {
       setRoles(resRoles.data.map((r: any) => ({ value: r.id_rol, label: r.nombre })));
     } catch (error) {
       console.error("Error al cargar usuarios:", error);
+      showToast("Error al cargar datos de usuarios", "error");
     } finally {
       setLoading(false);
     }
@@ -65,13 +69,16 @@ const UsuariosPage = () => {
     try {
       if (editItem) {
         await updateUsuario(editItem.id_usuario, form);
+        showToast("Usuario actualizado", "success");
       } else {
         await createUsuario(form);
+        showToast("Usuario creado con éxito", "success");
       }
       setModalOpen(false);
       fetchInitialData();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error al guardar usuario:", error);
+      showToast(parseError(error), "error");
     }
   };
 
@@ -79,16 +86,23 @@ const UsuariosPage = () => {
     if (!deleteItem) return;
     try {
       await deleteUsuario(deleteItem.id_usuario);
+      showToast("Usuario eliminado", "success");
       setConfirmOpen(false);
       fetchInitialData();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error al eliminar usuario:", error);
+      showToast(parseError(error), "error");
     }
   };
 
   const columns = useMemo<MRT_ColumnDef<Usuario>[]>(
     () => [
-      { accessorKey: "id_usuario", header: "ID", size: 80 },
+      { 
+        accessorKey: "id_usuario", 
+        header: "#", 
+        size: 80,
+        Cell: ({ row }) => row.index + 1
+      },
       { accessorKey: "nombre", header: "Nombre", size: 200 },
       { accessorKey: "contraseña", header: "Contraseña", size: 120, Cell: () => "****" },
       {
@@ -114,6 +128,9 @@ const UsuariosPage = () => {
         onAdd={openCreate}
         onEdit={openEdit}
         onDelete={openDelete}
+        addPermission="usuarios:manage"
+        editPermission="usuarios:manage"
+        deletePermission="usuarios:manage"
       />
 
       <FormModal

@@ -7,6 +7,8 @@ import {
 } from "material-react-table";
 import { Box, IconButton, Tooltip } from "@mui/material";
 import { Edit, Trash2, Plus } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+
 // ─── Props del componente ───
 interface DataTableProps<T extends Record<string, any>> {
     columns: MRT_ColumnDef<T>[];      // Columnas (las define cada página)
@@ -16,7 +18,11 @@ interface DataTableProps<T extends Record<string, any>> {
     onEdit?: (row: T) => void;         // Callback al hacer clic en "Editar"
     onDelete?: (row: T) => void;       // Callback al hacer clic en "Eliminar"
     renderExtraActions?: (row: T) => React.ReactNode; // New prop
+    renderTopToolbarActions?: () => React.ReactNode;  // New prop for custom buttons in header
     isLoading?: boolean;               // Estado de carga
+    addPermission?: string;
+    editPermission?: string;
+    deletePermission?: string;
 }
 function DataTable<T extends Record<string, any>>({
     columns,
@@ -26,8 +32,14 @@ function DataTable<T extends Record<string, any>>({
     onEdit,
     onDelete,
     renderExtraActions,
+    renderTopToolbarActions,
     isLoading = false,
+    addPermission,
+    editPermission,
+    deletePermission,
 }: DataTableProps<T>) {
+    const { hasPermission } = useAuth();
+
     // ─── Configuración de la tabla ───
     const table = useMaterialReactTable({
         columns,
@@ -38,7 +50,7 @@ function DataTable<T extends Record<string, any>>({
         renderRowActions: ({ row }) => (
             <Box sx={{ display: "flex", gap: "2px" }}>
                 {renderExtraActions && renderExtraActions(row.original)}
-                {onEdit && (
+                {onEdit && (!editPermission || hasPermission(editPermission)) && (
                     <Tooltip title="Editar">
                         <IconButton
                             size="small"
@@ -48,7 +60,7 @@ function DataTable<T extends Record<string, any>>({
                         </IconButton>
                     </Tooltip>
                 )}
-                {onDelete && (
+                {onDelete && (!deletePermission || hasPermission(deletePermission)) && (
                     <Tooltip title="Eliminar">
                         <IconButton
                             size="small"
@@ -91,12 +103,15 @@ function DataTable<T extends Record<string, any>>({
             {/* ─── Toolbar superior ─── */}
             <div className="page-table__toolbar">
                 {title && <h3 className="page-table__title">{title}</h3>}
-                {onAdd && (
-                    <button className="btn-add" onClick={onAdd}>
-                        <Plus size={18} />
-                        Agregar
-                    </button>
-                )}
+                <div className="page-table__actions">
+                    {renderTopToolbarActions && renderTopToolbarActions()}
+                    {onAdd && (!addPermission || hasPermission(addPermission)) && (
+                        <button className="btn-add" onClick={onAdd}>
+                            <Plus size={18} />
+                            Agregar
+                        </button>
+                    )}
+                </div>
             </div>
             {/* ─── Tabla ─── */}
             <div className="table-card">

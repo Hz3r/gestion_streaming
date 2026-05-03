@@ -5,6 +5,8 @@ import FormModal from "../components/common/FormModal";
 import FormInput from "../components/common/FormInput";
 import ConfirmDialog from "../components/common/ConfirmDialog";
 import { Tv, Save } from "lucide-react";
+import { useToast } from "../context/ToastContext";
+import { parseError } from "../utils/errorParser";
 import { getPlataformas, createPlataforma, updatePlataforma, deletePlataforma } from "../services/dashboardService";
 
 type Plataforma = {
@@ -15,6 +17,7 @@ type Plataforma = {
 const INITIAL_FORM = { nombre: "" };
 
 const PlataformasPage = () => {
+  const { showToast } = useToast();
   const [data, setData] = useState<Plataforma[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -34,6 +37,7 @@ const PlataformasPage = () => {
       setData(res.data);
     } catch (error) {
       console.error("Error al cargar plataformas:", error);
+      showToast("Error al cargar plataformas", "error");
     } finally {
       setLoading(false);
     }
@@ -64,13 +68,16 @@ const PlataformasPage = () => {
     try {
       if (editItem) {
         await updatePlataforma(editItem.id_plataforma, form);
+        showToast("Plataforma actualizada", "success");
       } else {
         await createPlataforma(form);
+        showToast("Plataforma creada con éxito", "success");
       }
       setModalOpen(false);
       fetchData();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error al guardar plataforma:", error);
+      showToast(parseError(error), "error");
     }
   };
 
@@ -78,16 +85,23 @@ const PlataformasPage = () => {
     if (!deleteItem) return;
     try {
       await deletePlataforma(deleteItem.id_plataforma);
+      showToast("Plataforma eliminada", "success");
       setConfirmOpen(false);
       fetchData();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error al eliminar plataforma:", error);
+      showToast(parseError(error), "error");
     }
   };
 
   const columns = useMemo<MRT_ColumnDef<Plataforma>[]>(
     () => [
-      { accessorKey: "id_plataforma", header: "ID", size: 80 },
+      { 
+        accessorKey: "id_plataforma", 
+        header: "#", 
+        size: 80,
+        Cell: ({ row }) => row.index + 1
+      },
       { accessorKey: "nombre", header: "Nombre", size: 300 },
     ],
     []

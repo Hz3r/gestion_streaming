@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Search, User, FileText, Smartphone, X } from "lucide-react";
+import { Search, User, FileText, Smartphone, X, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { searchGlobal } from "../../services/searchService";
 
 interface SearchResult {
     id: number;
@@ -10,32 +11,41 @@ interface SearchResult {
     link: string;
 }
 
-const MOCK_RESULTS: SearchResult[] = [
-    { id: 1, title: "Carlos Mendoza", subtitle: "Cliente - Premium", type: "cliente", link: "/clientes" },
-    { id: 2, title: "Contrato #8821", subtitle: "Vence en 2 días", type: "contrato", link: "/contratos" },
-    { id: 3, title: "netflix_premium@mail.com", subtitle: "Cuenta - Activa", type: "cuenta", link: "/cuentas" },
-    { id: 4, title: "Ana Torres", subtitle: "Cliente - Nuevo", type: "cliente", link: "/clientes" },
-];
-
 const SearchBar: React.FC = () => {
     const [query, setQuery] = useState("");
     const [isOpen, setIsOpen] = useState(false);
     const [results, setResults] = useState<SearchResult[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
+    const debounceRef = useRef<any>(null);
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (query.length > 1) {
-            const filtered = MOCK_RESULTS.filter(res => 
-                res.title.toLowerCase().includes(query.toLowerCase()) ||
-                res.subtitle.toLowerCase().includes(query.toLowerCase())
-            );
-            setResults(filtered);
-            setIsOpen(true);
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+
+        if (query.trim().length > 1) {
+            setIsLoading(true);
+            debounceRef.current = setTimeout(async () => {
+                try {
+                    const res = await searchGlobal(query);
+                    setResults(res.data || []);
+                    setIsOpen(true);
+                } catch (error) {
+                    console.error("Error en búsqueda:", error);
+                    setResults([]);
+                } finally {
+                    setIsLoading(false);
+                }
+            }, 400); // 400ms debounce
         } else {
             setResults([]);
             setIsOpen(false);
+            setIsLoading(false);
         }
+
+        return () => {
+            if (debounceRef.current) clearTimeout(debounceRef.current);
+        };
     }, [query]);
 
     useEffect(() => {
@@ -65,7 +75,11 @@ const SearchBar: React.FC = () => {
     return (
         <div className="search-container" ref={containerRef}>
             <div className={`search-bar ${isOpen ? "search-bar--active" : ""}`}>
-                <Search className="search-bar__icon" size={18} />
+                {isLoading ? (
+                    <Loader2 className="search-bar__icon animate-spin" size={18} />
+                ) : (
+                    <Search className="search-bar__icon" size={18} />
+                )}
                 <input
                     type="text"
                     className="search-bar__input"
@@ -75,7 +89,7 @@ const SearchBar: React.FC = () => {
                     onFocus={() => query.length > 1 && setIsOpen(true)}
                 />
                 {query && (
-                    <button className="search-bar__clear" onClick={() => setQuery("")}>
+                    <button className="search-bar__clear" onClick={() => { setQuery(""); setResults([]); }}>
                         <X size={14} />
                     </button>
                 )}

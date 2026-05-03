@@ -12,6 +12,9 @@ import {
   getContratos, createContrato, updateContrato, deleteContrato,
   getClientes, getCuentas, getMetodosPago 
 } from "../services/dashboardService";
+import { useToast } from "../context/ToastContext";
+import { parseError } from "../utils/errorParser";
+import { useAuth } from "../context/AuthContext";
 
 type CuentaDetalle = {
   id_cuenta: number;
@@ -52,6 +55,8 @@ const MESES = [
 ];
 
 const ContratosPage = () => {
+  const { showToast } = useToast();
+  const { user } = useAuth();
   const [data, setData] = useState<Contrato[]>([]);
   const [loading, setLoading] = useState(true);
   const [clientes, setClientes] = useState<{value: any, label: string, tipo: string}[]>([]);
@@ -94,11 +99,13 @@ const ContratosPage = () => {
       setCuentas(resCue.data.map((c: any) => ({ 
         value: c.id_cuenta, 
         label: `${c.email} — ${c.plataforma} (${c.capacidad_total - c.perfiles_en_uso} disp.)`,
-        estado: c.estado
+        estado: c.estado,
+        es_lank: c.es_lank
       })));
       setMetodosPago(resMet.data.map((m: any) => ({ value: m.id_metodo, label: m.nombre })));
     } catch (error) {
       console.error("Error al cargar datos de contratos:", error);
+      showToast("Error al cargar la información de contratos", "error");
     } finally {
       setLoading(false);
     }
@@ -164,12 +171,18 @@ const ContratosPage = () => {
 
   const handleSave = async () => {
     try {
+      // VALIDACIÓN DE FECHAS
+      if (form.fecha_vencimiento < form.fecha_inicio) {
+        showToast("La fecha de vencimiento debe ser posterior a la fecha de inicio", "error");
+        return;
+      }
+
       if (form.detalles.length === 0) {
-        alert("Debes agregar al menos una cuenta al contrato.");
+        showToast("Debes agregar al menos una cuenta al contrato.", "warning");
         return;
       }
       if (form.detalles.some((d: any) => !d.id_cuenta || !d.perfiles_alquilados)) {
-        alert("Por favor completa los datos de todas las cuentas.");
+        showToast("Por favor completa los datos de todas las cuentas.", "warning");
         return;
       }
 
@@ -188,6 +201,7 @@ const ContratosPage = () => {
         precio_total: totalPerfiles * precioUnitario,
         estado_pagado: estadoPagado,
         tipo_contrato: form.tipo_contrato,
+        id_usuario: user?.id,
         detalles: form.detalles.map((d: any) => ({
           id_cuenta: Number(d.id_cuenta),
           perfiles_alquilados: Number(d.perfiles_alquilados)
@@ -196,13 +210,15 @@ const ContratosPage = () => {
 
       if (editItem) {
         await updateContrato(editItem.id_contrato, dataToSend);
+        showToast("Contrato actualizado con éxito", "success");
       } else {
         await createContrato(dataToSend);
+        showToast("Contrato creado y perfiles asignados", "success");
       }
       setModalOpen(false);
       fetchInitialData();
     } catch (error: any) {
-      alert(error.response?.data?.message || "Error al guardar el contrato");
+      showToast(parseError(error), "error");
       console.error("Error al guardar contrato:", error);
     }
   };
@@ -211,10 +227,12 @@ const ContratosPage = () => {
     if (!deleteItem) return;
     try {
       await deleteContrato(deleteItem.id_contrato);
+      showToast("Contrato eliminado y perfiles liberados", "success");
       setConfirmOpen(false);
       fetchInitialData();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error al eliminar contrato:", error);
+      showToast(parseError(error), "error");
     }
   };
 
@@ -254,7 +272,12 @@ const ContratosPage = () => {
 
   const columns = useMemo<MRT_ColumnDef<Contrato>[]>(
     () => [
-      { accessorKey: "id_contrato", header: "ID", size: 60 },
+      { 
+        accessorKey: "id_contrato", 
+        header: "#", 
+        size: 60,
+        Cell: ({ row }) => row.index + 1
+      },
       { accessorKey: "cliente", header: "Cliente", size: 150 },
       {
         accessorKey: "tipo_contrato",
@@ -448,10 +471,19 @@ const ContratosPage = () => {
           </div>
         }
       >
-        <div style={{ background: '#f8fafc', padding: '10px 15px', borderRadius: '8px', marginBottom: '20px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ 
+          background: 'var(--bg-secondary)', 
+          padding: '10px 15px', 
+          borderRadius: '8px', 
+          marginBottom: '20px', 
+          border: '1px solid var(--border-color)', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'space-between' 
+        }}>
           <div>
-            <h4 style={{ margin: 0, color: '#1e293b' }}>Modo Lank Farm</h4>
-            <p style={{ margin: '2px 0 0', fontSize: '0.8rem', color: '#64748b' }}>Activa esto si el contrato pertenece a la Granja de Lank (Precio S/ 0, Pago Automático).</p>
+            <h4 style={{ margin: 0, color: 'var(--text-primary)' }}>Modo Lank Farm</h4>
+            <p style={{ margin: '2px 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Activa esto si el contrato pertenece a la Granja de Lank (Precio S/ 0, Pago Automático).</p>
           </div>
           <label className="switch" style={{ position: 'relative', display: 'inline-block', width: '50px', height: '24px' }}>
             <input 
@@ -557,7 +589,10 @@ const ContratosPage = () => {
                 name={`id_cuenta_${index}`}
                 value={detalle.id_cuenta}
                 onChange={(_, val) => handleDetalleChange(index, "id_cuenta", val)}
-                options={cuentas.filter((c: any) => c.estado !== 'Caída' || c.value === Number(detalle.id_cuenta))}
+                options={cuentas.filter((c: any) => 
+                  (form.tipo_contrato === "Lank" ? c.es_lank : !c.es_lank) && 
+                  (c.estado !== 'Caída' || c.value === Number(detalle.id_cuenta))
+                )}
                 placeholder="Buscar cuenta..."
                 searchPlaceholder="Escribe el email..."
                 required

@@ -15,7 +15,7 @@ const Header: React.FC<HeaderProps> = ({ title }) => {
             <div className="header__actions">
                 <SearchBar />
                 <div className="header__toolbar">
-                    <NotificationBell count={3} />
+                    <NotificationBell />
                     <div className="header__divider" />
                     <UserProfile />
                 </div>

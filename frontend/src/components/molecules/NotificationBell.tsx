@@ -1,6 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Bell, CheckCircle, AlertTriangle, Info, XCircle, Clock } from "lucide-react";
 import { getNotificaciones, marcarNotificacionLeida, marcarTodasLeidas } from "../../services/dashboardService";
+import { useAuth } from "../../context/AuthContext";
+import { useConfig } from "../../context/ConfigContext";
 
 interface Notification {
     id_notificacion: number;
@@ -15,20 +18,31 @@ const NotificationBell: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const dropdownRef = useRef<HTMLDivElement>(null);
-    
-    // Asumimos ID 1 por ahora hasta tener login real
-    const ID_USUARIO = 1;
+    const { user } = useAuth();
+    const { config } = useConfig();
+    const ID_USUARIO = user?.id;
 
-    const unreadCount = notifications.filter(n => !n.leida).length;
+    // Filtrar notificaciones según la configuración
+    const filteredNotifications = notifications.filter(ntf => {
+        if (config.notificaciones === 'none') return false;
+        if (config.notificaciones === 'vencimiento') {
+            // Asumiendo que las de vencimiento tienen un título o tipo específico
+            return ntf.titulo.toLowerCase().includes('vencimiento') || ntf.mensaje.toLowerCase().includes('vence');
+        }
+        return true; // mode 'all'
+    });
+
+    const unreadCount = filteredNotifications.filter(n => !n.leida).length;
 
     useEffect(() => {
+        if (!ID_USUARIO || config.notificaciones === 'none') return;
         fetchNotifications();
-        // Polling simple cada 30 segundos (opcional, mejor sockets luego)
         const interval = setInterval(fetchNotifications, 30000);
         return () => clearInterval(interval);
-    }, []);
+    }, [ID_USUARIO, config.notificaciones]);
 
     const fetchNotifications = async () => {
+        if (!ID_USUARIO) return;
         try {
             const res = await getNotificaciones(ID_USUARIO);
             setNotifications(res.data);
@@ -48,6 +62,7 @@ const NotificationBell: React.FC = () => {
     }, []);
 
     const markAllAsRead = async () => {
+        if (!ID_USUARIO) return;
         try {
             await marcarTodasLeidas(ID_USUARIO);
             fetchNotifications();
@@ -76,17 +91,36 @@ const NotificationBell: React.FC = () => {
     };
 
     const formatTime = (dateStr: string) => {
-        const date = new Date(dateStr);
-        const now = new Date();
-        const diffMs = now.getTime() - date.getTime();
-        const diffMin = Math.floor(diffMs / 60000);
-        
-        if (diffMin < 1) return "Recién";
-        if (diffMin < 60) return `Hace ${diffMin} min`;
-        const diffHrs = Math.floor(diffMin / 60);
-        if (diffHrs < 24) return `Hace ${diffHrs} h`;
-        return date.toLocaleDateString();
+        try {
+            const options: Intl.DateTimeFormatOptions = { 
+                timeZone: config.zona_horaria || 'America/Lima',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            };
+            
+            const date = new Date(dateStr);
+            const now = new Date();
+            const diffMs = now.getTime() - date.getTime();
+            const diffMin = Math.floor(diffMs / 60000);
+            
+            if (diffMin < 1) return "Recién";
+            if (diffMin < 60) return `Hace ${diffMin} min`;
+            const diffHrs = Math.floor(diffMin / 60);
+            if (diffHrs < 24) return `Hace ${diffHrs} h`;
+            
+            return new Intl.DateTimeFormat('es-ES', { 
+                ...options, 
+                day: '2-digit', 
+                month: '2-digit' 
+            }).format(date);
+        } catch (e) {
+            return new Date(dateStr).toLocaleDateString();
+        }
     };
+
+    // Si las notificaciones están desactivadas, no mostramos nada
+    if (config.notificaciones === 'none') return null;
 
     return (
         <div className="notification-container" ref={dropdownRef}>
@@ -113,13 +147,13 @@ const NotificationBell: React.FC = () => {
                     </div>
                     
                     <div className="notification-dropdown__list">
-                        {notifications.length === 0 ? (
+                        {filteredNotifications.length === 0 ? (
                             <div className="notification-empty">
                                 <Bell size={32} />
-                                <p>No tienes notificaciones</p>
+                                <p>No hay alertas relevantes</p>
                             </div>
                         ) : (
-                            notifications.map(ntf => (
+                            filteredNotifications.map(ntf => (
                                 <div 
                                     key={ntf.id_notificacion} 
                                     className={`notification-item ${!ntf.leida ? "notification-item--unread" : ""}`}
@@ -143,7 +177,9 @@ const NotificationBell: React.FC = () => {
                     </div>
 
                     <div className="notification-dropdown__footer">
-                        <button className="btn-view-all">Ver todas las alertas</button>
+                        <Link to="/notificaciones" className="btn-view-all" onClick={() => setIsOpen(false)}>
+                            Ver todas las alertas
+                        </Link>
                     </div>
                 </div>
             )}

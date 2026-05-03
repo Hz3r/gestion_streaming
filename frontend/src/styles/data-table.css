@@ -20,12 +20,18 @@
   color: var(--color-gray-900);
 }
 
-/* ─── Botón Agregar ─── */
+.page-table__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-left: auto;
+}
+
+/* ─── Botones de acción ─── */
 .btn-add {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  margin-left: auto;
   padding: var(--space-2) var(--space-5);
   background: var(--gradient-primary);
   color: #ffffff;
@@ -36,6 +42,27 @@
   cursor: pointer;
   transition: all var(--transition-fast);
   box-shadow: var(--shadow-sm);
+}
+
+.btn-action-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-5);
+  background: #ffffff;
+  color: var(--color-primary-600);
+  border: 1px solid var(--color-primary-200);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btn-action-outline:hover {
+  background-color: var(--color-primary-50);
+  border-color: var(--color-primary-400);
+  transform: translateY(-1px);
 }
 
 .btn-add:hover {

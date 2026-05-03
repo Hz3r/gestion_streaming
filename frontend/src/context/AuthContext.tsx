@@ -8,6 +8,7 @@ interface User {
   email: string;
   rol: number;
   foto?: string;
+  permisos?: string[];
 }
 
 interface AuthContextType {
@@ -17,6 +18,8 @@ interface AuthContextType {
   logout: () => void;
   isAuthenticated: boolean;
   isLoading: boolean;
+  hasPermission: (permission: string) => boolean;
+  updateUser: (userData: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -69,8 +72,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const hasPermission = (permission: string) => {
+    if (!user) return false;
+    // Admin (rol 1) o permiso "all" tienen acceso total
+    if (user.rol === 1 || user.permisos?.includes('all')) return true;
+    return user.permisos?.includes(permission) || false;
+  };
+
+  const updateUser = (userData: Partial<User>) => {
+    if (!user) return;
+    const updatedUser = { ...user, ...userData };
+    setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!token, isLoading }}>
+    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!token, isLoading, hasPermission, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,20 +1,22 @@
 import React from "react";
+import { NavLink as RouterNavLink } from "react-router-dom";
 import type { LucideIcon } from "lucide-react";
 
 interface NavLinkProps {
     label: string,
     href: string,
-    icon?: LucideIcon,
-    isActive?: boolean
+    icon?: LucideIcon
 }
 
-
-const NavLink: React.FC<NavLinkProps> = ({ label, href, icon: Icon, isActive }: NavLinkProps) => {
+const NavLink: React.FC<NavLinkProps> = ({ label, href, icon: Icon }: NavLinkProps) => {
     return (
-        <li className={`navlink ${isActive ? "navlink--active" : ""}`}>
+        <RouterNavLink 
+            to={href} 
+            className={({ isActive }) => `navlink ${isActive ? "navlink--active" : ""}`}
+        >
             {Icon && <span className="navlink__icon"><Icon size={20} /></span>}
-            <a className="navlink__label" href={href}>{label}</a>
-        </li>
+            {label && <span className="navlink__label">{label}</span>}
+        </RouterNavLink>
     )
 }
 

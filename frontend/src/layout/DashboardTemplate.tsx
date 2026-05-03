@@ -20,6 +20,7 @@ const PAGE_TITLES: Record<string, string> = {
     "/perfil": "Mi Perfil",
     "/lank-farm": "Granja de Farmeo Lank",
     "/cuentas-rotativas": "Cuentas Rotativas",
+    "/notificaciones": "Notificaciones",
 }
 
 const DashboardTemplate: React.FC = () => {

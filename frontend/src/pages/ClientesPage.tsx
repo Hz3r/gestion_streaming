@@ -6,6 +6,8 @@ import FormInput from "../components/common/FormInput";
 import FormSelect from "../components/common/FormSelect";
 import ConfirmDialog from "../components/common/ConfirmDialog";
 import { UserCheck, Save } from "lucide-react";
+import { useToast } from "../context/ToastContext";
+import { parseError } from "../utils/errorParser";
 import { getClientes, createCliente, updateCliente, deleteCliente } from "../services/dashboardService";
 
 type Cliente = {
@@ -30,6 +32,7 @@ const TIPOS = [
 ];
 
 const ClientesPage = () => {
+  const { showToast } = useToast();
   const [data, setData] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -49,6 +52,7 @@ const ClientesPage = () => {
       setData(res.data);
     } catch (error) {
       console.error("Error al cargar clientes:", error);
+      showToast("Error al cargar la lista de clientes", "error");
     } finally {
       setLoading(false);
     }
@@ -70,13 +74,16 @@ const ClientesPage = () => {
     try {
       if (editItem) {
         await updateCliente(editItem.id_cliente, form);
+        showToast("Cliente actualizado correctamente", "success");
       } else {
         await createCliente(form);
+        showToast("Cliente creado con éxito", "success");
       }
       setModalOpen(false);
       fetchData();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error al guardar cliente:", error);
+      showToast(parseError(error), "error");
     }
   };
 
@@ -84,16 +91,23 @@ const ClientesPage = () => {
     if (!deleteItem) return;
     try {
       await deleteCliente(deleteItem.id_cliente);
+      showToast("Cliente eliminado", "success");
       setConfirmOpen(false);
       fetchData();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error al eliminar cliente:", error);
+      showToast(parseError(error), "error");
     }
   };
 
   const columns = useMemo<MRT_ColumnDef<Cliente>[]>(
     () => [
-      { accessorKey: "id_cliente", header: "ID", size: 80 },
+      { 
+        accessorKey: "id_cliente", 
+        header: "#", 
+        size: 80,
+        Cell: ({ row }) => row.index + 1
+      },
       { accessorKey: "nombre", header: "Nombre", size: 220 },
       { accessorKey: "telefono", header: "Teléfono", size: 150 },
       {

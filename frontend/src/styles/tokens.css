@@ -215,3 +215,26 @@
   --z-tooltip:    700;
   --z-toast:      800;
 }
+
+/* --- MODO OSCURO (Dark Mode) --- */
+.dark-theme {
+  --bg-body:       #0b1437;
+  --bg-sidebar:    #111c44;
+  --bg-card:       #111c44;
+  --bg-card-hover: #1b254b;
+  --bg-input:      #1b254b;
+
+  --color-gray-50:  #0b1437;
+  --color-gray-100: #1b254b;
+  --color-gray-200: #2b3674;
+  --color-gray-300: #3a4b8a;
+  --color-gray-400: #a3aed0;
+  --color-gray-500: #8f9bba;
+  --color-gray-600: #cbd5e1;
+  --color-gray-700: #e2e8f0;
+  --color-gray-800: #ffffff;
+  --color-gray-900: #ffffff;
+
+  --border-color: #2b3674;
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.4);
+}

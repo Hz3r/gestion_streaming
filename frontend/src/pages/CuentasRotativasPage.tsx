@@ -4,8 +4,11 @@ import DataTable from "../components/common/DataTable";
 import FormModal from "../components/common/FormModal";
 import FormInput from "../components/common/FormInput";
 import { getCuentas, updateCuenta, getRotativaPorCuenta, createRotativa, updateRotativa, getHistorialCredenciales } from "../services/dashboardService";
+import { useToast } from "../context/ToastContext";
+import { parseError } from "../utils/errorParser";
 import { RefreshCw, History, AlertTriangle, Users } from "lucide-react";
-import { differenceInHours, parseISO } from "date-fns";
+import { differenceInDays, parseISO } from "date-fns";
+import { formatFullDate } from "../utils/dateUtils";
 
 type Cuenta = {
   id_cuenta: number;
@@ -20,6 +23,7 @@ type Cuenta = {
 };
 
 const CuentasRotativasPage = () => {
+  const { showToast } = useToast();
   const [data, setData] = useState<Cuenta[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -30,7 +34,11 @@ const CuentasRotativasPage = () => {
   const [historial, setHistorial] = useState<any[]>([]);
 
   const [form, setForm] = useState({
-    email: "", contraseña: "", fecha_cancelacion_requerida: "", estado_vigencia: "Activo"
+    email: "", 
+    contraseña: "", 
+    fecha_cancelacion_requerida: "", 
+    estado_vigencia: "Activo",
+    fecha_expiracion: ""
   });
 
   useEffect(() => {
@@ -59,8 +67,9 @@ const CuentasRotativasPage = () => {
       setForm({
         email: item.email,
         contraseña: item.contraseña,
-        fecha_cancelacion_requerida: rot?.fecha_cancelacion_requerida ? rot.fecha_cancelacion_requerida.split("T")[0] : "",
-        estado_vigencia: rot?.estado_vigencia || "Activo"
+        fecha_cancelacion_requerida: (rot?.fecha_cancelacion_requerida || item.fecha_expiracion)?.split("T")[0] || "",
+        estado_vigencia: rot?.estado_vigencia || "Activo",
+        fecha_expiracion: item.fecha_expiracion ? item.fecha_expiracion.split("T")[0] : ""
       });
       setModalOpen(true);
     } catch (error) {
@@ -81,16 +90,27 @@ const CuentasRotativasPage = () => {
 
   const handleSave = async () => {
     try {
-      if (editItem && (editItem.email !== form.email || editItem.contraseña !== form.contraseña)) {
+      // VALIDACIONES
+      if (form.fecha_cancelacion_requerida) {
+        const today = new Date().toISOString().split('T')[0];
+        if (form.fecha_cancelacion_requerida < today) {
+          showToast("La fecha de cancelación no puede ser una fecha pasada", "error");
+          return;
+        }
+      }
+
+      // Actualizar Cuenta (Credenciales + Fecha Sincronizada)
+      if (editItem) {
         await updateCuenta(editItem.id_cuenta, {
           ...editItem,
           fecha_compra: editItem.fecha_compra ? editItem.fecha_compra.split("T")[0] : null,
-          fecha_expiracion: editItem.fecha_expiracion ? editItem.fecha_expiracion.split("T")[0] : null,
+          fecha_expiracion: form.fecha_cancelacion_requerida, // Sincronización total
           email: form.email,
           contraseña: form.contraseña
         });
       }
 
+      // Actualizar o Crear Configuración Rotativa (Fecha de Cobro Sincronizada)
       if (form.fecha_cancelacion_requerida) {
         const payload = {
           id_cuenta_fija: editItem?.id_cuenta,
@@ -106,14 +126,20 @@ const CuentasRotativasPage = () => {
 
       setModalOpen(false);
       fetchData();
-    } catch (error) {
+      showToast("Credenciales y fechas sincronizadas correctamente", "success");
+    } catch (error: any) {
       console.error(error);
-      alert("Error guardando credenciales rotativas");
+      showToast(parseError(error), "error");
     }
   };
 
   const columns = useMemo<MRT_ColumnDef<Cuenta>[]>(() => [
-    { accessorKey: "id_cuenta", header: "ID", size: 60 },
+    { 
+      accessorKey: "id_cuenta", 
+      header: "#", 
+      size: 60,
+      Cell: ({ row }) => row.index + 1
+    },
     { accessorKey: "plataforma", header: "Plataforma", size: 120 },
     { accessorKey: "email", header: "Email Actual", size: 200 },
     {
@@ -125,25 +151,37 @@ const CuentasRotativasPage = () => {
       )
     },
     {
-      accessorKey: "fecha_cancelacion_requerida",
-      header: "Alerta de Cobro",
-      size: 160,
+      accessorKey: "fecha_expiracion",
+      header: "Vencimiento / Próximo Cobro",
+      size: 200,
       Cell: ({ cell }) => {
         const val = cell.getValue<string>();
-        if (!val) return <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Sin fecha límite</span>;
+        if (!val) return <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Sin fecha definida</span>;
         
         const fecha = parseISO(val);
-        const diffHoras = differenceInHours(fecha, new Date());
+        const diasRestantes = differenceInDays(fecha, new Date());
+        let badge = null;
         
-        if (diffHoras < 0) {
-          return <span className="badge badge--error"><AlertTriangle size={14} style={{marginRight:4}} /> Vencido</span>;
-        } else if (diffHoras <= 24) {
-          return <span className="badge badge--error"><AlertTriangle size={14} style={{marginRight:4}} /> ¡Menos de 24h!</span>;
-        } else if (diffHoras <= 72) {
-          return <span className="badge badge--warning"><AlertTriangle size={14} style={{marginRight:4}} /> Faltan {Math.ceil(diffHoras / 24)} d</span>;
+        if (diasRestantes < 0) {
+          badge = <span className="badge badge--error"><AlertTriangle size={14} style={{marginRight:4}} /> Vencido</span>;
+        } else if (diasRestantes === 0) {
+          badge = <span className="badge badge--error"><AlertTriangle size={14} style={{marginRight:4}} /> ¡Vence HOY!</span>;
+        } else if (diasRestantes <= 3) {
+          badge = <span className="badge badge--error">En {diasRestantes} días</span>;
+        } else if (diasRestantes <= 7) {
+          badge = <span className="badge badge--warning">En {diasRestantes} días</span>;
         } else {
-          return <span className="badge badge--success">En {Math.ceil(diffHoras / 24)} d</span>;
+          badge = <span className="badge badge--success">En {diasRestantes} días</span>;
         }
+
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            {badge}
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+              {formatFullDate(val)}
+            </span>
+          </div>
+        );
       }
     },
     {
@@ -169,7 +207,6 @@ const CuentasRotativasPage = () => {
         columns={columns}
         data={data}
         isLoading={loading}
-        enableRowActions={false} // Usamos la columna personalizada
       />
 
       <FormModal
@@ -185,9 +222,23 @@ const CuentasRotativasPage = () => {
           </div>
         }
       >
-        <div className="alert-box" style={{ background: '#eff6ff', color: '#1e40af', padding: '15px', borderRadius: '8px', marginBottom: '20px' }}>
-          <strong><Users size={16} style={{verticalAlign: 'sub'}}/> Clientes asociados: {editItem?.perfiles_en_uso}</strong>
-          <p style={{ margin: '5px 0 0 0', fontSize: '0.85rem' }}>Recuerda notificar a estos clientes sobre el cambio de credenciales.</p>
+        <div className="alert-box" style={{ 
+          background: 'var(--bg-secondary)', 
+          color: 'var(--text-primary)', 
+          padding: '15px', 
+          borderRadius: '8px', 
+          marginBottom: '20px',
+          border: '1px solid var(--border-color)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '5px'
+        }}>
+          <strong style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-info-500)' }}>
+            <Users size={18}/> Clientes asociados: {editItem?.perfiles_en_uso}
+          </strong>
+          <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+            Esta fecha se sincronizará automáticamente con el vencimiento de la cuenta.
+          </p>
         </div>
 
         <div className="form-grid" style={{ gridTemplateColumns: '1fr' }}>
@@ -196,15 +247,15 @@ const CuentasRotativasPage = () => {
           
           <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid #e2e8f0' }}>
             <FormInput 
-              label="Fecha de Cancelación Requerida (Evitar cobro)" 
+              label="Fecha de Vencimiento / Próximo Cobro" 
               name="fecha_cancelacion_requerida" 
               type="date" 
               value={form.fecha_cancelacion_requerida} 
-              onChange={(e) => setForm({...form, fecha_cancelacion_requerida: e.target.value})} 
+              onChange={(e) => setForm({...form, fecha_cancelacion_requerida: e.target.value, fecha_expiracion: e.target.value})} 
             />
-            {form.fecha_cancelacion_requerida && differenceInHours(parseISO(form.fecha_cancelacion_requerida), new Date()) <= 24 && differenceInHours(parseISO(form.fecha_cancelacion_requerida), new Date()) >= 0 && (
+            {form.fecha_cancelacion_requerida && differenceInDays(parseISO(form.fecha_cancelacion_requerida), new Date()) <= 1 && differenceInDays(parseISO(form.fecha_cancelacion_requerida), new Date()) >= 0 && (
               <div style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '5px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <AlertTriangle size={14}/> ¡Atención! Menos de 24h para cancelar la suscripción.
+                <AlertTriangle size={14}/> ¡Atención! El cobro se realizará muy pronto (1 día o menos).
               </div>
             )}
           </div>

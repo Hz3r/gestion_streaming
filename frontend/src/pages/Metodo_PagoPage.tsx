@@ -5,6 +5,8 @@ import FormModal from "../components/common/FormModal";
 import FormInput from "../components/common/FormInput";
 import ConfirmDialog from "../components/common/ConfirmDialog";
 import { CreditCard, Save } from "lucide-react";
+import { useToast } from "../context/ToastContext";
+import { parseError } from "../utils/errorParser";
 import { getMetodosPago, createMetodoPago, updateMetodoPago, deleteMetodoPago } from "../services/dashboardService";
 
 type MetodoPago = {
@@ -15,6 +17,7 @@ type MetodoPago = {
 const INITIAL_FORM = { nombre: "" };
 
 const MetodoPagoPage = () => {
+  const { showToast } = useToast();
   const [data, setData] = useState<MetodoPago[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -34,6 +37,7 @@ const MetodoPagoPage = () => {
       setData(res.data);
     } catch (error) {
       console.error("Error al cargar métodos de pago:", error);
+      showToast("Error al cargar métodos de pago", "error");
     } finally {
       setLoading(false);
     }
@@ -51,13 +55,16 @@ const MetodoPagoPage = () => {
     try {
       if (editItem) {
         await updateMetodoPago(editItem.id_metodo, form);
+        showToast("Método de pago actualizado", "success");
       } else {
         await createMetodoPago(form);
+        showToast("Método de pago creado con éxito", "success");
       }
       setModalOpen(false);
       fetchData();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error al guardar método de pago:", error);
+      showToast(parseError(error), "error");
     }
   };
 
@@ -65,16 +72,23 @@ const MetodoPagoPage = () => {
     if (!deleteItem) return;
     try {
       await deleteMetodoPago(deleteItem.id_metodo);
+      showToast("Método de pago eliminado", "success");
       setConfirmOpen(false);
       fetchData();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error al eliminar método de pago:", error);
+      showToast(parseError(error), "error");
     }
   };
 
   const columns = useMemo<MRT_ColumnDef<MetodoPago>[]>(
     () => [
-      { accessorKey: "id_metodo", header: "ID", size: 80 },
+      { 
+        accessorKey: "id_metodo", 
+        header: "#", 
+        size: 80,
+        Cell: ({ row }) => row.index + 1
+      },
       { accessorKey: "nombre", header: "Nombre", size: 300 },
     ],
     []
