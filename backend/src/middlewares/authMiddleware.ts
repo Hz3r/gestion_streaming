@@ -5,8 +5,14 @@ import UsuarioRepository from '../repositories/UsuarioRepository';
 const JWT_SECRET = process.env.JWT_SECRET || 'mi_secreto_super_seguro_123';
 
 export const authMiddleware = (req: Request, res: Response, next: NextFunction) => {
-    // Permitir login y health check sin autenticación
-    if (req.path.includes('/login') || req.path.includes('/health')) return next();
+    // Permitir login, health check y configuración pública sin autenticación
+    if (
+        req.path.includes('/login') || 
+        req.path.includes('/health') || 
+        (req.path === '/configuracion' && req.method === 'GET')
+    ) {
+        return next();
+    }
 
     const authHeader = req.headers.authorization;
     

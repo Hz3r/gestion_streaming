@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import { Lock, Mail, LogIn } from 'lucide-react';
+import { Lock, Mail, LogIn, ShieldCheck, Globe } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useConfig } from '../context/ConfigContext';
 import './LoginPage.css';
 
 const LoginPage: React.FC = () => {
@@ -12,6 +13,7 @@ const LoginPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { config } = useConfig();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,34 +37,46 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="login-container">
+      <div className="login-background-overlay"></div>
+      
       <div className="login-card">
-        
-        {/* LOGO BANKDASH STYLE */}
-        <div className="login-header">
-          <div className="login-logo-icon">🎬</div>
-          <h1 className="login-title">STREAMEASE</h1>
-        </div>
-
-        <div className="login-body">
-          <h2 className="login-subtitle">Bienvenido de nuevo</h2>
-          <p className="login-description">Ingresa tus credenciales de administrador para acceder al panel de control.</p>
+        <div className="login-card-inner">
           
+          <div className="login-header">
+            <div className="login-logo-container">
+              {config.logo_url ? (
+                <img src={config.logo_url} alt="Logo" className="login-custom-logo" />
+              ) : (
+                <div className="login-logo-placeholder">
+                  <ShieldCheck size={32} />
+                </div>
+              )}
+            </div>
+            <h1 className="login-company-name">{config.titulo_sitio || 'Sistema de Gestión'}</h1>
+            <p className="login-system-tagline">{config.subtitulo_sitio || 'Panel Administrativo'}</p>
+          </div>
+
+          <div className="login-divider">
+            <span>Acceso Seguro</span>
+          </div>
+
           <form onSubmit={handleLogin} className="login-form">
             
             {error && (
-              <div className="login-error-alert">
+              <div className="login-error-message">
+                <span className="error-dot"></span>
                 {error}
               </div>
             )}
 
-            <div className="input-group">
-              <label htmlFor="email">Correo Electrónico</label>
-              <div className="input-wrapper">
+            <div className="form-field">
+              <label htmlFor="email">Usuario Empresarial</label>
+              <div className="input-control">
                 <Mail className="input-icon" size={18} />
                 <input
                   type="email"
                   id="email"
-                  placeholder="admin@streamease.com"
+                  placeholder="nombre@empresa.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -70,9 +84,9 @@ const LoginPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="input-group">
+            <div className="form-field">
               <label htmlFor="password">Contraseña</label>
-              <div className="input-wrapper">
+              <div className="input-control">
                 <Lock className="input-icon" size={18} />
                 <input
                   type="password"
@@ -85,25 +99,40 @@ const LoginPage: React.FC = () => {
               </div>
             </div>
 
+            <div className="login-options">
+              <label className="remember-me">
+                <input type="checkbox" />
+                <span>Recordar sesión</span>
+              </label>
+              <a href="#" className="forgot-password">¿Olvidó su contraseña?</a>
+            </div>
+
             <button 
               type="submit" 
-              className="login-btn"
+              className="corporate-login-btn"
               disabled={isLoading}
             >
               {isLoading ? (
-                <div className="spinner"></div>
+                <div className="btn-spinner"></div>
               ) : (
                 <>
-                  <LogIn size={20} />
-                  <span>Iniciar Sesión</span>
+                  <span>Entrar al Sistema</span>
+                  <LogIn size={18} />
                 </>
               )}
             </button>
           </form>
-        </div>
 
-        <div className="login-footer">
-          <p>© {new Date().getFullYear()} StreamEase Dashboard. Todos los derechos reservados.</p>
+          <div className="login-footer-info">
+            <div className="footer-links">
+              <a href="#"><Globe size={14} /> Soporte Técnico</a>
+              <span>•</span>
+              <a href="#">Privacidad</a>
+            </div>
+            <p className="copyright-text">
+              © {new Date().getFullYear()} {config.titulo_sitio}. Todos los derechos reservados.
+            </p>
+          </div>
         </div>
       </div>
     </div>
