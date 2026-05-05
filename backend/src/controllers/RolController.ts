@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import RolService from '../services/RolService';
+import RolService from '../services/RolService.js';
 
 class RolController {
 

@@ -1,4 +1,4 @@
-import EgresoService from "../services/EgresoService";
+import EgresoService from "../services/EgresoService.js";
 import { Request, Response } from "express";
 
 class EgresoController {

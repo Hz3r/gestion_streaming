@@ -1,6 +1,6 @@
-import ClienteRepository from "../repositories/ClienteRepository";
-import Cliente from "../models/Cliente";
-import ClienteDTO from "../dtos/ClienteDTO";
+import ClienteRepository from "../repositories/ClienteRepository.js";
+import Cliente from "../models/Cliente.js";
+import ClienteDTO from "../dtos/ClienteDTO.js";
 
 class ClienteService {
     async crearCliente(cliente: Cliente): Promise<ClienteDTO> {

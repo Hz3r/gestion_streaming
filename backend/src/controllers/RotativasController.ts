@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import NotificacionService from "../services/NotificacionService";
-import RotativasRepository from "../repositories/RotativasRepository";
-import HistorialCredencialesRepository from "../repositories/HistorialCredencialesRepository";
+import NotificacionService from "../services/NotificacionService.js";
+import RotativasRepository from "../repositories/RotativasRepository.js";
+import HistorialCredencialesRepository from "../repositories/HistorialCredencialesRepository.js";
 
 class RotativasController {
     async crearRotativa(req: Request, res: Response) {

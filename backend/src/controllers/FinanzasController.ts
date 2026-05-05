@@ -1,4 +1,4 @@
-import FinanzasService from "../services/FinanzasService";
+import FinanzasService from "../services/FinanzasService.js";
 import { Request, Response } from "express";
 
 class FinanzasController {

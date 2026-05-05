@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import Metodo_PagoService from "../services/Metodo_PagoService";
+import Metodo_PagoService from "../services/Metodo_PagoService.js";
 
 class Metodo_PagoController {
 

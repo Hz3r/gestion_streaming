@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import PlataformaService from "../services/PlataformaService";
+import PlataformaService from "../services/PlataformaService.js";
 
 class PlataformaController{
 

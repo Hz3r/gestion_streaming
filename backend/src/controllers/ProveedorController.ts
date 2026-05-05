@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import ProveedorService from "../services/ProveedorService";
+import ProveedorService from "../services/ProveedorService.js";
 
 class ProveedorController {
 

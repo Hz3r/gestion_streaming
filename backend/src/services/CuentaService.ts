@@ -84,7 +84,7 @@ class CuentaService {
         const rotativa = await RotativasRepository.obtenerPorCuenta(id);
         if (rotativa) {
             await RotativasRepository.actualizar(rotativa.id_rotativa, {
-                fecha_cancelacion_requerida: cuentas.fecha_expiracion
+                fecha_cancelacion_requerida: cuentas.fecha_expiracion as any
             });
         }
         

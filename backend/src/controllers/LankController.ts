@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import LankService from "../services/LankService";
+import LankService from "../services/LankService.js";
 
 class LankController {
     async crear(req: Request, res: Response) {
@@ -22,7 +22,7 @@ class LankController {
 
     async obtenerPorId(req: Request, res: Response) {
         try {
-            const id = parseInt(req.params.id);
+            const id = parseInt(req.params.id as string);
             const cuenta = await LankService.obtenerPorId(id);
             if (!cuenta) return res.status(404).json({ message: "Cuenta no encontrada" });
             res.status(200).json(cuenta);
@@ -33,7 +33,7 @@ class LankController {
 
     async actualizar(req: Request, res: Response) {
         try {
-            const id = parseInt(req.params.id);
+            const id = parseInt(req.params.id as string);
             await LankService.actualizar(id, req.body);
             res.status(200).json({ message: "Cuenta Lank actualizada" });
         } catch (error: any) {
@@ -43,7 +43,7 @@ class LankController {
 
     async eliminar(req: Request, res: Response) {
         try {
-            const id = parseInt(req.params.id);
+            const id = parseInt(req.params.id as string);
             await LankService.eliminar(id);
             res.status(200).json({ message: "Cuenta Lank eliminada" });
         } catch (error: any) {
