@@ -1,5 +1,5 @@
 import { Router } from "express";
-import RotativasController from "../controllers/RotativasController";
+import RotativasController from "../controllers/RotativasController.js";
 
 const router = Router();
 

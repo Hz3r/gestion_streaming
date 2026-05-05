@@ -1,5 +1,5 @@
-import CuentasService from "../services/CuentaService";
-import NotificacionService from "../services/NotificacionService";
+import CuentasService from "../services/CuentaService.js";
+import NotificacionService from "../services/NotificacionService.js";
 import { Request, Response } from "express";
 
 class CuentasController {

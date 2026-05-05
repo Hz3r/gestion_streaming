@@ -1,7 +1,7 @@
 import { Router } from "express";
-import CuentasController from "../controllers/CuentasController";
-import { checkPermission } from "../middlewares/authMiddleware";
-import { PERMISOS } from "../constants/Permisos";
+import CuentasController from "../controllers/CuentasController.js";
+import { checkPermission } from "../middlewares/authMiddleware.js";
+import { PERMISOS } from "../constants/Permisos.js";
 
 const router = Router();
 

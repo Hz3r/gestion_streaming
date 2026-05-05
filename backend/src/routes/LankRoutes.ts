@@ -1,7 +1,7 @@
 import { Router } from "express";
-import LankController from "../controllers/LankController";
-import { checkPermission } from "../middlewares/authMiddleware";
-import { PERMISOS } from "../constants/Permisos";
+import LankController from "../controllers/LankController.js";
+import { checkPermission } from "../middlewares/authMiddleware.js";
+import { PERMISOS } from "../constants/Permisos.js";
 
 const router = Router();
 

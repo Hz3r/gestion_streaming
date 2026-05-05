@@ -1,5 +1,5 @@
 import { Router } from "express";
-import ContratosController from "../controllers/ContratosController";
+import ContratosController from "../controllers/ContratosController.js";
 
 const router = Router();
 

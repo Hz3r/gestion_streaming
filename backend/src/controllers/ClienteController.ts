@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import ClienteService from "../services/ClienteService";
+import ClienteService from "../services/ClienteService.js";
 
 class ClienteController {
     async crear(req: Request, res: Response) {

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import ConfiguracionService from "../services/ConfiguracionService";
+import ConfiguracionService from "../services/ConfiguracionService.js";
 
 class ConfiguracionController {
     async obtenerConfiguracion(req: Request, res: Response) {

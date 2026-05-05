@@ -1,5 +1,5 @@
 import { Router } from "express";
-import PlataformaController from "../controllers/PlataformaController";
+import PlataformaController from "../controllers/PlataformaController.js";
 
 const router = Router();
 

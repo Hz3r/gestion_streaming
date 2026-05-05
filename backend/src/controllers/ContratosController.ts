@@ -1,5 +1,5 @@
-import ContratoService from "../services/ContratoService";
-import NotificacionService from "../services/NotificacionService";
+import ContratoService from "../services/ContratoService.js";
+import NotificacionService from "../services/NotificacionService.js";
 import { Request, Response } from "express";
 
 class ContratosController {

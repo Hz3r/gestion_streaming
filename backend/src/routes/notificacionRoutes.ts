@@ -1,5 +1,5 @@
 import { Router } from "express";
-import NotificacionController from "../controllers/NotificacionController";
+import NotificacionController from "../controllers/NotificacionController.js";
 
 const router = Router();
 
