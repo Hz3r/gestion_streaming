@@ -6,23 +6,23 @@ import compression from 'compression';
 import cookieParser from 'cookie-parser';
 
 // Importar rutas
-import usuarioRoutes from './routes/usuarioRoutes';
-import rolRoutes from './routes/rolRoutes';
-import plataformaRoutes from './routes/PlataformaRoutes';
-import metodo_pagoRoutes from './routes/Metodo_PagoRoutes';
-import proveedorRoutes from './routes/ProveedorRoutes';
-import clienteRoutes from './routes/ClienteRoutes';
-import cuentasRoutes from './routes/CuentaRoutes';
-import contratosRoutes from './routes/ContratosRoutes';
-import finanzasRoutes from './routes/FinanzasRoutes';
-import configuracionRoutes from './routes/configuracionRoutes';
-import notificacionRoutes from './routes/notificacionRoutes';
-import egresoRoutes from './routes/EgresoRoutes';
-import lankRoutes from './routes/LankRoutes';
-import rotativasRoutes from './routes/RotativasRoutes';
-import authRoutes from './routes/AuthRoutes';
-import searchRoutes from './routes/SearchRoutes';
-import { authMiddleware } from './middlewares/authMiddleware';
+import usuarioRoutes from './routes/usuarioRoutes.js';
+import rolRoutes from './routes/rolRoutes.js';
+import plataformaRoutes from './routes/PlataformaRoutes.js';
+import metodo_pagoRoutes from './routes/Metodo_PagoRoutes.js';
+import proveedorRoutes from './routes/ProveedorRoutes.js';
+import clienteRoutes from './routes/ClienteRoutes.js';
+import cuentasRoutes from './routes/CuentaRoutes.js';
+import contratosRoutes from './routes/ContratosRoutes.js';
+import finanzasRoutes from './routes/FinanzasRoutes.js';
+import configuracionRoutes from './routes/configuracionRoutes.js';
+import notificacionRoutes from './routes/notificacionRoutes.js';
+import egresoRoutes from './routes/EgresoRoutes.js';
+import lankRoutes from './routes/LankRoutes.js';
+import rotativasRoutes from './routes/RotativasRoutes.js';
+import authRoutes from './routes/AuthRoutes.js';
+import searchRoutes from './routes/SearchRoutes.js';
+import { authMiddleware } from './middlewares/authMiddleware.js';
 
 const app = express();
 
