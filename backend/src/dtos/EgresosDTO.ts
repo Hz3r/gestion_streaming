@@ -1,4 +1,4 @@
-import { TipoEgreso } from "../models/Egresos";
+import { TipoEgreso } from "../models/Egresos.js";
 
 interface EgresosDTO {
     id_egreso?: number;

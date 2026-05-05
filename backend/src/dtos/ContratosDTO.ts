@@ -1,4 +1,4 @@
-import { ContratoDetalle } from "../models/Contratos";
+import { ContratoDetalle } from "../models/Contratos.js";
 
 interface ContratosDTO {
     readonly id_contrato: number;

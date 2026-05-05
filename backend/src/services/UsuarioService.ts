@@ -1,5 +1,5 @@
 //librerias
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import UsuarioRepository from '../repositories/UsuarioRepository.js';
 import Usuario from '../models/Usuario.js';
 import { UsuarioDTO, UpdatePerfilDTO, UpdatePasswordDTO } from '../dtos/UsuarioDTO.js';
