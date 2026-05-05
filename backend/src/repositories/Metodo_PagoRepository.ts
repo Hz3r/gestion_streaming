@@ -1,5 +1,5 @@
-import pool from "../config/db";
-import Metodo_Pago from "../models/Metodo_Pago";
+import pool from "../config/db.js";
+import Metodo_Pago from "../models/Metodo_Pago.js";
 
 
 class Metodo_PagoRepository {

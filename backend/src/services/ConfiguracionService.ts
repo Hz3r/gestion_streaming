@@ -1,5 +1,5 @@
-import ConfiguracionRepository from "../repositories/ConfiguracionRepository";
-import { ConfiguracionDTO, UpdateConfiguracionDTO } from "../dtos/ConfiguracionDTO";
+import ConfiguracionRepository from "../repositories/ConfiguracionRepository.js";
+import { ConfiguracionDTO, UpdateConfiguracionDTO } from "../dtos/ConfiguracionDTO.js";
 
 class ConfiguracionService {
     async obtenerConfiguracion(): Promise<ConfiguracionDTO> {

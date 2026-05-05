@@ -1,5 +1,5 @@
-import pool from "../config/db";
-import type { FinanzasResumenDTO, FinanzasPendienteDTO } from "../dtos/FinanzasDTO";
+import pool from "../config/db.js";
+import type { FinanzasResumenDTO, FinanzasPendienteDTO } from "../dtos/FinanzasDTO.js";
 
 class FinanzasRepository {
 

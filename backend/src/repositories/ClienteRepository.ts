@@ -1,5 +1,5 @@
-import pool from "../config/db";
-import Cliente from "../models/Cliente";
+import pool from "../config/db.js";
+import Cliente from "../models/Cliente.js";
 
 class ClienteRepository {
     async crear(cliente: Cliente): Promise<number> {

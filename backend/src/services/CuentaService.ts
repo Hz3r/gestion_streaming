@@ -1,6 +1,6 @@
-import Cuentas from "../models/Cuentas";
-import CuentasDTO from "../dtos/CuentasDTO";
-import CuentaRepository from "../repositories/CuentaRepository";
+import Cuentas from "../models/Cuentas.js";
+import CuentasDTO from "../dtos/CuentasDTO.js";
+import CuentaRepository from "../repositories/CuentaRepository.js";
 
 class CuentaService {
 
@@ -64,7 +64,7 @@ class CuentaService {
 
         // Sincronización de Historial de Credenciales (Módulo Cuentas Rotativas)
         if (existe.email !== cuentas.email || existe.contraseña !== cuentas.contraseña) {
-            const HistorialRepository = require('../repositories/HistorialCredencialesRepository').default;
+            const { default: HistorialRepository } = await import('../repositories/HistorialCredencialesRepository.js');
             await HistorialRepository.crear({
                 id_cuenta: id,
                 email_anterior: existe.email,
@@ -80,7 +80,7 @@ class CuentaService {
 
         // --- SINCRONIZACIÓN DINÁMICA CON CUENTAS ROTATIVAS ---
         // Si la fecha de expiración cambió, actualizamos la fecha de cobro en rotativas
-        const RotativasRepository = require('../repositories/RotativasRepository').default;
+        const { default: RotativasRepository } = await import('../repositories/RotativasRepository.js');
         const rotativa = await RotativasRepository.obtenerPorCuenta(id);
         if (rotativa) {
             await RotativasRepository.actualizar(rotativa.id_rotativa, {

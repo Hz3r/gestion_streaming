@@ -1,6 +1,6 @@
-import Plataforma from "../models/Plataforma";
-import PlataformaDTO from "../dtos/PlataformaDTO";
-import PlataformaRepository from "../repositories/PlataformaRepository";
+import Plataforma from "../models/Plataforma.js";
+import PlataformaDTO from "../dtos/PlataformaDTO.js";
+import PlataformaRepository from "../repositories/PlataformaRepository.js";
 
 class PlataformaService{
 

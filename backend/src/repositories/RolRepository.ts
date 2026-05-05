@@ -1,5 +1,5 @@
-import pool from '../config/db';
-import Rol from '../models/Roles';
+import pool from '../config/db.js';
+import Rol from '../models/Roles.js';
 
 
 class RolRepository {

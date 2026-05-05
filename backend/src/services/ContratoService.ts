@@ -1,8 +1,8 @@
-import Contratos from "../models/Contratos";
-import ContratosDTO from "../dtos/ContratosDTO";
-import ContratosDetalleDTO from "../dtos/ContratosDetalleDTO";
-import ContratoRepository from "../repositories/ContratoRepository";
-import CuentaRepository from "../repositories/CuentaRepository";
+import Contratos from "../models/Contratos.js";
+import ContratosDTO from "../dtos/ContratosDTO.js";
+import ContratosDetalleDTO from "../dtos/ContratosDetalleDTO.js";
+import ContratoRepository from "../repositories/ContratoRepository.js";
+import CuentaRepository from "../repositories/CuentaRepository.js";
 
 class ContratoService{
 

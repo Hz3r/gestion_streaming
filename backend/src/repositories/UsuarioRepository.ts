@@ -1,5 +1,5 @@
-import pool from '../config/db';
-import Usuario from '../models/Usuario';
+import pool from '../config/db.js';
+import Usuario from '../models/Usuario.js';
 
 
 class UsuarioRepository{

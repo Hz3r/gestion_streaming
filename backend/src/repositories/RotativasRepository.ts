@@ -1,5 +1,5 @@
-import pool from "../config/db";
-import CuentasRotativasDetalles from "../models/CuentasRotativasDetalles";
+import pool from "../config/db.js";
+import CuentasRotativasDetalles from "../models/CuentasRotativasDetalles.js";
 
 class RotativasRepository {
     async crear(rotativa: CuentasRotativasDetalles): Promise<number> {

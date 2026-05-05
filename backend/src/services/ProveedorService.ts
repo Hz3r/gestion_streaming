@@ -1,6 +1,6 @@
-import ProveedorRepository from "../repositories/ProveedorRepository";
-import Proveedor from "../models/Proveedor";
-import ProveedorDTO from "../dtos/ProveedorDTO";
+import ProveedorRepository from "../repositories/ProveedorRepository.js";
+import Proveedor from "../models/Proveedor.js";
+import ProveedorDTO from "../dtos/ProveedorDTO.js";
 
 class ProveedorService {
 

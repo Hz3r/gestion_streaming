@@ -1,6 +1,6 @@
-import RolRepository from '../repositories/RolRepository';
-import Rol from '../models/Roles';
-import RolDTO from '../dtos/RolDTO';
+import RolRepository from '../repositories/RolRepository.js';
+import Rol from '../models/Roles.js';
+import RolDTO from '../dtos/RolDTO.js';
 
 
 class RolService {

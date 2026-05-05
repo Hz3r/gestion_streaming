@@ -1,5 +1,5 @@
-import pool from "../config/db";
-import Plataforma from "../models/Plataforma";
+import pool from "../config/db.js";
+import Plataforma from "../models/Plataforma.js";
 
 class PlataformaRepository{
 

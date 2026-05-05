@@ -1,5 +1,5 @@
-import Cuentas from "../models/Cuentas";
-import pool from "../config/db";
+import Cuentas from "../models/Cuentas.js";
+import pool from "../config/db.js";
 
 class CuentaRepository {
 

@@ -1,6 +1,6 @@
-import Egresos from "../models/Egresos";
-import EgresosDTO from "../dtos/EgresosDTO";
-import EgresoRepository from "../repositories/EgresoRepository";
+import Egresos from "../models/Egresos.js";
+import EgresosDTO from "../dtos/EgresosDTO.js";
+import EgresoRepository from "../repositories/EgresoRepository.js";
 
 class EgresoService {
     async crearEgreso(egreso: Egresos): Promise<EgresosDTO> {

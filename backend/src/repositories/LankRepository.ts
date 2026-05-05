@@ -1,5 +1,5 @@
-import pool from "../config/db";
-import LankCuentasMadre from "../models/LankCuentasMadre";
+import pool from "../config/db.js";
+import LankCuentasMadre from "../models/LankCuentasMadre.js";
 
 class LankRepository {
     async crear(lank: LankCuentasMadre): Promise<number> {

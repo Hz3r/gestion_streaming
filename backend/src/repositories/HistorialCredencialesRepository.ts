@@ -1,5 +1,5 @@
-import pool from "../config/db";
-import HistorialCredenciales from "../models/HistorialCredenciales";
+import pool from "../config/db.js";
+import HistorialCredenciales from "../models/HistorialCredenciales.js";
 
 class HistorialCredencialesRepository {
     async crear(historial: HistorialCredenciales): Promise<number> {

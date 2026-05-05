@@ -1,8 +1,8 @@
-import LankRepository from "../repositories/LankRepository";
-import LankCuentasMadre from "../models/LankCuentasMadre";
-import ContratoRepository from "../repositories/ContratoRepository";
-import CuentaRepository from "../repositories/CuentaRepository";
-import pool from "../config/db";
+import LankRepository from "../repositories/LankRepository.js";
+import LankCuentasMadre from "../models/LankCuentasMadre.js";
+import ContratoRepository from "../repositories/ContratoRepository.js";
+import CuentaRepository from "../repositories/CuentaRepository.js";
+import pool from "../config/db.js";
 
 class LankService {
     async crearCuenta(data: LankCuentasMadre): Promise<number> {

@@ -1,6 +1,6 @@
-import pool from "../config/db";
-import Notificacion from "../models/Notificacion";
-import { CrearNotificacionDTO } from "../dtos/NotificacionDTO";
+import pool from "../config/db.js";
+import Notificacion from "../models/Notificacion.js";
+import { CrearNotificacionDTO } from "../dtos/NotificacionDTO.js";
 
 class NotificacionRepository {
     async obtenerPorUsuario(id_usuario: number): Promise<Notificacion[]> {

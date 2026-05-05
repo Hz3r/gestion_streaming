@@ -1,5 +1,5 @@
-import pool from "../config/db";
-import { ConfiguracionDTO } from "../dtos/ConfiguracionDTO";
+import pool from "../config/db.js";
+import { ConfiguracionDTO } from "../dtos/ConfiguracionDTO.js";
 
 class ConfiguracionRepository {
     async obtenerConfiguracion(): Promise<ConfiguracionDTO> {

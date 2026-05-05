@@ -1,5 +1,5 @@
-import Proveedor from "../models/Proveedor";
-import pool from "../config/db";
+import Proveedor from "../models/Proveedor.js";
+import pool from "../config/db.js";
 
 class ProveedorRepository {
 

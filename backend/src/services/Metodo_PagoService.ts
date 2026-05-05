@@ -1,6 +1,6 @@
-import Metodo_PagoRepository from "../repositories/Metodo_PagoRepository";
-import Metodo_Pago from "../models/Metodo_Pago";
-import Metodo_PagoDTO from "../dtos/Metodo_PagoDTO";
+import Metodo_PagoRepository from "../repositories/Metodo_PagoRepository.js";
+import Metodo_Pago from "../models/Metodo_Pago.js";
+import Metodo_PagoDTO from "../dtos/Metodo_PagoDTO.js";
 
 class Metodo_PagoService {
 

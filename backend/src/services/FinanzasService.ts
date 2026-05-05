@@ -1,6 +1,6 @@
-import type { FinanzasResumenDTO, FinanzasPendienteDTO } from "../dtos/FinanzasDTO";
-import FinanzasRepository from "../repositories/FinanzasRepository";
-import EgresoRepository from "../repositories/EgresoRepository";
+import type { FinanzasResumenDTO, FinanzasPendienteDTO } from "../dtos/FinanzasDTO.js";
+import FinanzasRepository from "../repositories/FinanzasRepository.js";
+import EgresoRepository from "../repositories/EgresoRepository.js";
 
 class FinanzasService {
 

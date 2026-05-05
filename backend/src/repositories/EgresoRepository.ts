@@ -1,5 +1,5 @@
-import pool from "../config/db";
-import Egresos from "../models/Egresos";
+import pool from "../config/db.js";
+import Egresos from "../models/Egresos.js";
 
 class EgresoRepository {
     async crear(egreso: Egresos): Promise<number> {

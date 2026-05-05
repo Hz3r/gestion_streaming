@@ -1,5 +1,5 @@
-import pool from "../config/db";
-import Contratos from "../models/Contratos";
+import pool from "../config/db.js";
+import Contratos from "../models/Contratos.js";
 
 class ContratoRepository{
     
